@@ -1,0 +1,48 @@
+#+title: yamusca
+
+* COMMENT generate markdown
+
+#+begin_src emacs-lisp :exports none :results silent
+  (defvar-local this-buffer-name (buffer-file-name))
+  (add-hook
+   'after-save-hook
+   (lambda ()
+     (when (string-equal this-buffer-name (buffer-file-name))
+       (shell-command "pandoc --from org --to markdown -o README.md readme.org"))))
+#+end_src
+
+* yamusca
+
+Yet another mustache parser/rendrer for scala.
+
+** Features
+
+- zero dependencies
+- type safe and functional template data
+- simple and easy to use
+
+** Building
+
+Using [[http://scala-sbt.org][sbt]]:
+
+#+begin_src shell :exports both
+sbt package
+#+end_src
+
+
+** Example
+
+#+begin_src scala :exports both
+import yamusca.context._
+import yamusca.mustache._
+import yamusca.mustache.syntax._
+
+val templ = parseTemplate("Hello {{name}}, see all {{#items}} - {{.}}, {{/items}}.")
+//templ: yamusca.parser.ParseResult = Right(Template(Vector(Literal(Hello ), Variable(name,false), Literal(, see all ), Section(items,Vector(Literal( - ), Variable(.,false), Literal(, )),false), Literal(.))))
+
+val data = Context("name" -> "Eike".value, "items" -> Value.list("one".value, "two".value))
+//data: yamusca.context.Context = yamusca.context$Context$$anon$2@42408a8f
+
+templ.right.get.render(data)
+//res0: String = Hello Eike, see all  - one,  - two, .
+#+end_src
