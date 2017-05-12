@@ -33,16 +33,14 @@ sbt package
 ** Example
 
 #+begin_src scala :exports both
-import yamusca.context._
-import yamusca.mustache._
-import yamusca.mustache.syntax._
+import yamusca.imports._
 
-val templ = parseTemplate("Hello {{name}}, see all {{#items}} - {{.}}, {{/items}}.")
+val data = Context("name" -> Value.of("Eike"), "items" -> Value.fromSeq( List("one", "two").map(Value.of) ))
+//data: yamusca.context.Context = yamusca.context$Context$$anon$2@4c41848e
+
+val templ = mustache.parse("Hello {{name}}, see all {{#items}} - {{.}}, {{/items}}.")
 //templ: yamusca.parser.ParseResult = Right(Template(Vector(Literal(Hello ), Variable(name,false), Literal(, see all ), Section(items,Vector(Literal( - ), Variable(.,false), Literal(, )),false), Literal(.))))
 
-val data = Context("name" -> "Eike".value, "items" -> Value.list("one".value, "two".value))
-//data: yamusca.context.Context = yamusca.context$Context$$anon$2@42408a8f
-
-templ.right.get.render(data)
+mustache.render(templ.right.get)(data)
 //res0: String = Hello Eike, see all  - one,  - two, .
 #+end_src

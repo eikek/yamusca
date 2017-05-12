@@ -3,38 +3,20 @@ package yamusca
 import yamusca.data._
 import yamusca.context._
 
-object mustache {
+object expand {
 
-  def render(t: Template)(c: Context)(implicit r: Expand[Seq[Element]]): String = {
+  def renderResult(t: Template)(c: Context)(implicit r: Expand[Template]): String = {
+    render(t)(c)._2
+  }
+
+  def render(t: Template)(c: Context)(implicit r: Expand[Template]): (Context, String) = {
     val b = new StringBuilder
-    r(b append _)(t.els).result(c)
-    b.toString
+    val (next, _) = r(b append _)(t).run(c)
+    (next, b.toString)
   }
 
-  def renderTo(t: Template)(c: Context, f: String => Unit)(implicit r: Expand[Seq[Element]]): Unit =
-    r(f)(t.els).result(c)
-
-  def parseTemplate(s: String) = parser.parse(s)
-
-  object syntax {
-
-    implicit final class TemplateOps(val t: Template) extends AnyVal {
-
-      def render(ctx: Context)(implicit r: Expand[Seq[Element]]) =
-        mustache.render(t)(ctx)
-
-      def renderTo(c: Context, f: String => Unit)(implicit r: Expand[Seq[Element]]): Unit =
-        mustache.renderTo(t)(c, f)
-
-      def asString(implicit s: Show[Template]): String =
-        Template.asString(t)
-    }
-
-    implicit final class StringOps(val s: String) extends AnyVal {
-      def value: Value = Value.of(s)
-    }
-  }
-
+  def renderTo(t: Template)(c: Context, f: String => Unit)(implicit r: Expand[Template]): Unit =
+    r(f)(t).result(c)
 
   trait Expand[T] {
     def apply(consume: String => Unit)(e: T): Find[Unit]
@@ -76,7 +58,7 @@ object mustache {
       def apply(consume: String => Unit)(s: Section): Find[Unit] = {
         val expandInner: Find[Unit] = {
           val r = seqElementExpand
-          r(consume)(s.inner)
+          r(consume)(Template(s.inner))
         }
         Find.findOrEmpty(s.key).flatMap {
           case v if s.inverted =>
@@ -94,18 +76,19 @@ object mustache {
       }
     }
 
-    implicit def elementExpand(implicit el: Expand[Literal], ev: Expand[Variable], es: Expand[Section]): Expand[Element] = new Expand[Element] {
-      def apply(consume: String => Unit)(e: Element): Find[Unit] = e match {
-        case e: Literal => el(consume)(e)
-        case e: Variable => ev(consume)(e)
-        case e: Section => es(consume)(e)
+    implicit def elementExpand(implicit el: Expand[Literal], ev: Expand[Variable], es: Expand[Section]): Expand[Element] =
+      new Expand[Element] {
+        def apply(consume: String => Unit)(e: Element): Find[Unit] = e match {
+          case e: Literal => el(consume)(e)
+          case e: Variable => ev(consume)(e)
+          case e: Section => es(consume)(e)
+        }
       }
-    }
 
-    implicit def seqElementExpand(implicit r: Expand[Element]): Expand[Seq[Element]] =
-      new Expand[Seq[Element]] {
-        def apply(consume: String => Unit)(es: Seq[Element]): Find[Unit] =
-          es.map(r(consume)).foldLeft(Find.unit(()))(_ andThen _)
+    implicit def seqElementExpand(implicit r: Expand[Element]): Expand[Template] =
+      new Expand[Template] {
+        def apply(consume: String => Unit)(t: Template): Find[Unit] =
+          t.els.map(r(consume)).foldLeft(Find.unit(()))(_ andThen _)
       }
   }
 

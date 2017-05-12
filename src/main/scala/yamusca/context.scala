@@ -60,11 +60,13 @@ object context {
   object Value {
     def fromString(s: String): Value = SimpleValue(s)
     def fromBoolean(b: Boolean): Value = BoolValue(b)
+    def fromSeq(vs: Seq[Value]): Value = ListValue(vs)
+    def fromMap(m: Map[String, Value]) = MapValue(Context.fromMap(m), m.isEmpty)
 
     def of(s: String): Value = SimpleValue(s)
     def of(s: Option[String]): Value = SimpleValue(s getOrElse "")
     def of(b: Boolean): Value = BoolValue(b)
-    def list(vs: Value*): Value = ListValue(vs)
+    def seq(vs: Value*): Value = ListValue(vs)
     def map(vs: (String, Value)*): Value = MapValue(Context(vs: _*), vs.isEmpty)
     def lambda(f: Section => Find[String]): Value = LambdaValue(f)
   }
