@@ -10,14 +10,18 @@ Features
 -   type safe and functional template data
 -   simple and easy to use
 
-Building
---------
+Using
+-----
 
 Using [sbt](http://scala-sbt.org):
 
-``` {.shell .rundoc-block rundoc-language="shell" rundoc-exports="both"}
-sbt package
+``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
+libraryDependencies ++= Seq(
+  "com.github.eikek" %% "yamusca" % "0.1.0"
+)
 ```
+
+It is available for Scala 2.11 and 2.12.
 
 Simple Example
 --------------
@@ -92,8 +96,9 @@ def main(n: Int, f: Path): Unit = {
 ```
 
 The interesting thing is in `Data` case class which implements the
-*Context* trait. The context passed to the template expansion is not a
-fixed data structure (like a `Map`) but a function `String =>
+[Context](./src/main/scala/yamusca/context.scala) trait. The context
+passed to the template expansion is not a fixed data structure (like a
+`Map`) but a function `String =>
 (Context, Value)`. This allows to pass on the updated `Context` which is
 threaded through the expansion process. In this example, the checksum
 value is cached in the updated context. So the checksum is computed at
