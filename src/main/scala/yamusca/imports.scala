@@ -22,8 +22,11 @@ object imports {
   val Value = context.Value
 
   object mustache {
+    def expand(t: Template): Context => (Context, String) =
+      yamusca.expand.render(t)_
+
     def render(t: Template): Context => String =
-      expand.renderResult(t)_
+      yamusca.expand.renderResult(t)_
 
     def parse(s: String) =
       parser.parse(s)

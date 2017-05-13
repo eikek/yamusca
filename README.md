@@ -19,8 +19,8 @@ Using [sbt](http://scala-sbt.org):
 sbt package
 ```
 
-Example
--------
+Simple Example
+--------------
 
 ``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
 import yamusca.imports._
@@ -34,3 +34,73 @@ val templ = mustache.parse("Hello {{name}}, see all {{#items}} - {{.}}, {{/items
 mustache.render(templ.right.get)(data)
 //res0: String = Hello Eike, see all  - one,  - two, .
 ```
+
+Advanced Example
+----------------
+
+The following is an [Ammonite](http://www.lihaoyi.com/Ammonite/) script
+showing a (contrived) example:
+
+``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
+import $ivy.`com.github.eikek::yamusca:0.2.0-SNAPSHOT`
+import ammonite.ops._
+import java.nio.file.Files
+import java.security.MessageDigest
+import yamusca.imports._
+
+def computeSha(f: Path): String = {
+  println(s"Computing checksum for ${f.name}")
+  val md = MessageDigest.getInstance("SHA-256")
+  md.update(Files.readAllBytes(f.toNIO))
+  md.digest().map(c => "%x".format(c)).mkString
+}
+
+case class Data(sha: Option[String], file: Path) extends Context {
+  def find(key: String) = key match {
+    case "name" => (this, Some(Value.of(file.name)))
+    case "size" => (this, Some(Value.of(Files.size(file.toNIO).toString)))
+    case "sha" =>
+      val checksum = Option(sha.getOrElse(computeSha(file)))
+      (copy(sha = checksum), Some(Value.of(checksum)))
+    case _ => (this, None)
+  }
+}
+
+val template1 = mustache.parse(
+  """|Name: {{name}}
+     |Size: {{size}}""".stripMargin
+).right.get
+val template2 = mustache.parse(
+  """|Name: {{name}}
+     |Sha: {{sha}}
+     |Sha again: {{sha}}
+     |Size: {{size}}""".stripMargin
+).right.get
+
+
+@main
+def main(n: Int, f: Path): Unit = {
+  n match {
+    case 1 =>
+      println(mustache.render(template1)(Data(None, f)))
+    case 2 =>
+      println(mustache.expand(template2)(Data(None, f)))
+    case _ =>
+      println("Say 1 or 2 please")
+  }
+}
+```
+
+The interesting thing is in `Data` case class which implements the
+*Context* trait. The context passed to the template expansion is not a
+fixed data structure (like a `Map`) but a function `String =>
+(Context, Value)`. This allows to pass on the updated `Context` which is
+threaded through the expansion process. In this example, the checksum
+value is cached in the updated context. So the checksum is computed at
+most once, or not at all, if the template doesn't need it.
+
+This can be useful if you already have this kind of immutable data
+structure, so it is easy to wrap it in the `Context` trait. Using
+`mustache.expand` returns the final `Context` value together with the
+rendered template; while `mustache.render` discards the final context
+and only returns the rendered template.
