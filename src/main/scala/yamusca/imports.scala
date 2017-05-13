@@ -28,6 +28,9 @@ object imports {
     def render(t: Template): Context => String =
       yamusca.expand.renderResult(t)_
 
+    def renderTo(t: Template)(f: String => Unit): Context => Unit =
+      yamusca.expand.renderTo(t)(_, f)
+
     def parse(s: String) =
       parser.parse(s)
   }

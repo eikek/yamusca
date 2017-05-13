@@ -6,7 +6,7 @@ import yamusca.syntax._
 import yamusca.context.Find
 import yamusca.expand.Expand
 
-class MustacheSpec extends FlatSpec with Matchers {
+class YamuscaSpec extends FlatSpec with Matchers {
 
   "stackedcontext" should "replace correct positions" in {
     val sc = Context("name" -> Value.of("red")) :: Context("name" -> Value.of("red")) :: Context.empty

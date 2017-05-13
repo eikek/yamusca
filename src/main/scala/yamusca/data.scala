@@ -4,17 +4,24 @@ object data {
 
   sealed trait Element
 
-  case class Literal(text: String) extends Element {
-    def asString(implicit s: Show[Literal]) = s.show(this)
+  object Element {
+    implicit def elementShow(implicit s1: Show[Literal], s2: Show[Variable], s3: Show[Section]): Show[Element] =
+      Show {
+        case v: Literal => s1.show(v)
+        case v: Variable => s2.show(v)
+        case v: Section => s3.show(v)
+      }
+
+    def show(el: Element)(implicit s: Show[Element]): String = s.show(el)
   }
+
+  case class Literal(text: String) extends Element
 
   object Literal {
     implicit val literalShow: Show[Literal] = Show(_.text)
   }
 
-  case class Variable(key: String, unescape: Boolean = false) extends Element {
-    def asString(implicit s: Show[Variable]) = s.show(this)
-  }
+  case class Variable(key: String, unescape: Boolean = false) extends Element
 
   object Variable {
     implicit val variableShow: Show[Variable] = Show { v =>
@@ -22,9 +29,7 @@ object data {
     }
   }
 
-  case class Section(key: String, inner: Seq[Element], inverted: Boolean = false) extends Element {
-    def asString(implicit s: Show[Section]) = s.show(this)
-  }
+  case class Section(key: String, inner: Seq[Element], inverted: Boolean = false) extends Element
 
   object Section {
     implicit def sectionShow(implicit s1: Show[Literal], s2: Show[Variable]): Show[Section] = {
@@ -39,7 +44,6 @@ object data {
         prefix + s"${s.key}}}" + (s.inner.map(render).mkString) + s"{{/${s.key}}}"
       }
     }
-
   }
 
   case class Template(els: Seq[Element])
