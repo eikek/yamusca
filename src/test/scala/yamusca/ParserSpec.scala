@@ -36,4 +36,20 @@ class ParserSpec extends FlatSpec with Matchers {
       Template.asString(t) should be (in)
     }
   }
+
+  "whitespace" should "clear before section starts" in {
+    val tokens = tokenize("""|| This Is
+      |{{#boolean}}
+      ||
+      |{{/boolean}}
+      || A Line""".stripMargin)
+
+    handleWS(tokens).toList should be (
+      List(Token.Text("| This Is\n",0)
+        , Token.SectionStart(10,"boolean",false)
+        , Token.Text("|\n",22)
+        , Token.SectionEnd(25, "boolean")
+        , Token.Text("| A Line", 37))
+    )
+  }
 }

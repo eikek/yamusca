@@ -5,6 +5,7 @@ import yamusca.imports._
 import yamusca.syntax._
 import yamusca.context.Find
 import yamusca.expand.Expand
+import yamusca.util._
 
 class YamuscaSpec extends FlatSpec with Matchers {
 
@@ -126,5 +127,207 @@ class YamuscaSpec extends FlatSpec with Matchers {
     val t1 = Template(Seq(Variable("x1"), Literal("-"), Variable("x2")))
     t1.renderResult(ctx1) should be ("-")
     t1.renderResult(ctx0) should be ("red-")
+  }
+
+  it should "handle new lines after tags" in {
+    val data = Context("boolean" -> Value.of(true))
+    val template = "#{{#boolean}}\n/\n  {{/boolean}}"
+    info(s"template: ${template.visible}  expected: ${"#\n/".visible}")
+    val t = mustache.parse(template).right.get
+    mustache.render(t)(data).visible should be ("#\n/\n".visible)
+  }
+
+  it should "handle new lines before tags" in {
+    val data = Context("boolean" -> Value.of(true))
+    val template = """  {{#boolean}}
+#{{/boolean}}
+/"""
+    info(s"template: ${template.visible}  expected: ${"#\n/".visible}")
+    val t = mustache.parse(template).right.get
+    mustache.render(t)(data).visible should be ("#\n/".visible)
+  }
+
+  it should "remove indented standalone lines" in {
+    val data = Context("boolean" -> Value.of(true))
+    val template = """|
+| This Is
+  {{#boolean}}
+|
+  {{/boolean}}
+| A Line"""
+
+    val expected = """|
+| This Is
+|
+| A Line"""
+    val t = mustache.parse(template).right.get
+    info(s"template: ${template.visible}  expected: ${expected.visible}")
+    mustache.render(t)(data).visible should be (expected.visible)
+  }
+
+  it should "remove standalone lines" in {
+    val data = Context("boolean" -> Value.of(true))
+    val template = """|
+| This Is
+{{#boolean}}
+|
+{{/boolean}}
+| A Line"""
+
+    val expected = """|
+| This Is
+|
+| A Line"""
+    val t = mustache.parse(template).right.get
+    info(s"template: ${template.visible}  expected: ${expected.visible}")
+    mustache.render(t)(data).visible should be (expected.visible)
+  }
+
+  it should "permit multiple sections per template" in {
+    val data = Context("bool" -> Value.of(true), "two" -> Value.of("second"))
+    val template = """|
+{{#bool}}
+* first
+{{/bool}}
+* {{two}}
+{{#bool}}
+* third
+{{/bool}}"""
+    val expected = """|
+* first
+* second
+* third
+"""
+
+    val t = mustache.parse(template).right.get
+    info(s"template: ${template.visible}  expected: ${expected.visible}")
+    mustache.render(t)(data).visible should be (expected.visible)
+  }
+
+  it should "keep surrounding whitespace" in {
+    val data = Context("boolean" -> Value.of(true))
+    val template = " {{#boolean}}YES{{/boolean}}\n {{#boolean}}GOOD{{/boolean}}\n"
+    val expected = " YES\n GOOD\n"
+    val t = mustache.parse(template).right.get
+    mustache.render(t)(data).visible should be (expected.visible)
+  }
+
+  it should "access deep nested context" in {
+    val data = Context(
+      "a" -> Value.map("one" -> Value.of("1")),
+      "b" -> Value.map("two" -> Value.of("2")),
+      "c" -> Value.map("three" -> Value.of("3")),
+      "d" -> Value.map("four" -> Value.of("4")),
+      "e" -> Value.map("five" -> Value.of("5"))
+    )
+    val template = """
+      |{{#a}}
+      |{{one}}
+      |{{#b}}
+      |{{one}}{{two}}{{one}}
+      |{{#c}}
+      |{{one}}{{two}}{{three}}{{two}}{{one}}
+      |{{#d}}
+      |{{one}}{{two}}{{three}}{{four}}{{three}}{{two}}{{one}}
+      |{{#e}}
+      |{{one}}{{two}}{{three}}{{four}}{{five}}{{four}}{{three}}{{two}}{{one}}
+      |{{/e}}
+      |{{one}}{{two}}{{three}}{{four}}{{three}}{{two}}{{one}}
+      |{{/d}}
+      |{{one}}{{two}}{{three}}{{two}}{{one}}
+      |{{/c}}
+      |{{one}}{{two}}{{one}}
+      |{{/b}}
+      |{{one}}
+      |{{/a}}""".stripMargin
+
+    val expected = """
+      |1
+      |121
+      |12321
+      |1234321
+      |123454321
+      |1234321
+      |12321
+      |121
+      |1
+      |""".stripMargin
+
+    val t = mustache.parse(template).right.get
+    mustache.render(t)(data).visible should be (expected.visible)
+  }
+
+  it should "render falsy sections" in {
+    val data = Context("boolean" -> Value.of(false))
+    val template = "'{{^boolean}}This should be rendered.{{/boolean}}'"
+    val expected = "'This should be rendered.'"
+    val t = mustache.parse(template).right.get
+    mustache.render(t)(data).visible should be (expected.visible)
+  }
+
+  it should "omit truthy sections" in {
+    val data = Context("boolean" -> Value.of(true))
+    val template = "'{{^boolean}}This should not be rendered.{{/boolean}}'"
+    val expected = "''"
+    val t = mustache.parse(template).right.get
+    mustache.render(t)(data).visible should be (expected.visible)
+  }
+
+  it should "treat objects and hashes like truthy values " in {
+    val data = Context("context" -> Value.map("name" -> Value.of("Joe")))
+    val template = "'{{^context}}Hi {{name}}.{{/context}}'"
+    val expected = "''"
+    val t = mustache.parse(template).right.get
+    mustache.render(t)(data).visible should be (expected.visible)
+  }
+
+  it should "allow multiple inverted sections" in {
+    val data = Context("bool" -> Value.of(false), "two" -> Value.of("second"))
+    val template = """|
+      |{{^bool}}
+      |* first
+      |{{/bool}}
+      |* {{two}}
+      |{{^bool}}
+      |* third
+      |{{/bool}}""".stripMargin
+
+    val expected = """|
+      |* first
+      |* second
+      |* third
+      |""".stripMargin
+
+    val t = mustache.parse(template).right.get
+    mustache.render(t)(data).visible should be (expected.visible)
+  }
+
+  it should "iterate over strings" in {
+    val data = Context("list" -> Value.fromSeq(List("a","b","c","d","e").map(Value.of)))
+    val template =  "'{{#list}}({{.}}){{/list}}'"
+    val expected = "'(a)(b)(c)(d)(e)'"
+    val t = mustache.parse(template).right.get
+    mustache.render(t)(data).visible should be (expected.visible)
+  }
+
+  it should "recognize \\r\\n line endings" in {
+    val data = Context("boolean" -> Value.of(true))
+    val template = "|\r\n{{#boolean}}\r\ntest\r\n{{/boolean}}\r\n|"
+    val expected =  "|\r\ntest\r\n|"
+
+    val t = mustache.parse(template).right.get
+    mustache.render(t)(data).visible should be (expected.visible)
+  }
+
+  ignore should "iterate nested arrays" in {
+    val data = Context("list" ->
+      Value.seq(
+        Value.fromSeq(List("1","2","3").map(Value.of)),
+        Value.fromSeq(List("a","b","c").map(Value.of))
+      ))
+    val template = "'{{#list}}({{#.}}{{.}}{{/.}}){{/list}}'"
+    val expected = "'(123)(abc)'"
+    val t = mustache.parse(template).right.get
+    mustache.render(t)(data).visible should be (expected.visible)
   }
 }

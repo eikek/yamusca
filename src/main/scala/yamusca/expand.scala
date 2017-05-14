@@ -54,42 +54,54 @@ object expand {
       }
     }
 
-    implicit lazy val sectionExpand: Expand[Section] = new Expand[Section] {
-      def apply(consume: String => Unit)(s: Section): Find[Unit] = {
-        val expandInner: Find[Unit] = {
-          val r = seqElementExpand
-          r(consume)(Template(s.inner))
+    implicit def sectionExpand(implicit e1: Expand[Literal], e2: Expand[Variable]): Expand[Section] =
+      new Expand[Section] {
+        val expandElement: Expand[Element] = new Expand[Element] {
+          def apply(consume: String => Unit)(e: Element): Find[Unit] = {
+            e match {
+              case v: Literal => e1(consume)(v)
+              case v: Variable => e2(consume)(v)
+              case v: Section => sectionExpand(e1, e2)(consume)(v)
+            }
+          }
         }
-        Find.findOrEmpty(s.key).flatMap {
-          case v if s.inverted =>
-            if (v.isEmpty) expandInner
-            else Find.unit(())
-          case ListValue(vs) =>
-            val list = vs.map(v => expandInner.stacked(v.asContext))
-            list.foldLeft(Find.unit(()))(_ andThen _)
-          case LambdaValue(f) =>
-            f(s).map(consume)
-          case v if !v.isEmpty =>
-            expandInner.stacked(v.asContext)
-          case _ => Find.unit(())
+
+        def apply(consume: String => Unit)(s: Section): Find[Unit] = {
+          val expandInner: Find[Unit] = {
+            val r = templateExpand(expandElement)
+            r(consume)(Template(s.inner))
+          }
+
+          Find.findOrEmpty(s.key).flatMap {
+            case v if s.inverted =>
+              if (v.isEmpty) expandInner
+              else Find.unit(())
+            case ListValue(vs) =>
+              val list = vs.map(v => expandInner.stacked(v.asContext))
+              list.foldLeft(Find.unit(()))(_ andThen _)
+            case LambdaValue(f) =>
+              f(s).map(consume)
+            case v if !v.isEmpty =>
+              expandInner.stacked(v.asContext)
+            case _ => Find.unit(())
+          }
         }
       }
-    }
 
-    implicit def elementExpand(implicit el: Expand[Literal], ev: Expand[Variable], es: Expand[Section]): Expand[Element] =
+    implicit def elementExpand(implicit e1: Expand[Literal], e2: Expand[Variable], e3: Expand[Section]): Expand[Element] =
       new Expand[Element] {
-        def apply(consume: String => Unit)(e: Element): Find[Unit] = e match {
-          case e: Literal => el(consume)(e)
-          case e: Variable => ev(consume)(e)
-          case e: Section => es(consume)(e)
-        }
+        def apply(consume: String => Unit)(e: Element): Find[Unit] =
+          e match {
+            case v: Literal => e1(consume)(v)
+            case v: Variable => e2(consume)(v)
+            case v: Section => e3(consume)(v)
+          }
       }
 
-    implicit def seqElementExpand(implicit r: Expand[Element]): Expand[Template] =
+    implicit def templateExpand(implicit r: Expand[Element]): Expand[Template] =
       new Expand[Template] {
         def apply(consume: String => Unit)(t: Template): Find[Unit] =
           t.els.map(r(consume)).foldLeft(Find.unit(()))(_ andThen _)
       }
   }
-
 }

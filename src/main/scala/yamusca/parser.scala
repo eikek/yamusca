@@ -13,139 +13,182 @@ object parser {
 
   object Token {
     case class Text(s: String, index: Int) extends Token
-    sealed trait Open extends Token
-    case class OpenSection(index: Int) extends Open
-    case class OpenInverse(index: Int) extends Open
-    case class OpenEndSection(index: Int) extends Open
-    case class OpenVariable(index: Int) extends Open
-    case class OpenUnescape(index: Int) extends Open
-    case class Close(index: Int) extends Token
-
-    val openKinds = Map[String, Int => Token](
-      "{{#" -> OpenSection.apply
-        , "{{^" -> OpenInverse.apply
-        , "{{/" -> OpenEndSection.apply
-        , "{{" -> OpenVariable.apply
-        , "{{&" -> OpenUnescape.apply
-    )
-
-    val openTokens: List[String] = openKinds.keys.toList.sortBy(-_.length)
-    val closeTokens: List[String] = List("}}")
+    case class SectionStart(index: Int, name: String, inverted: Boolean) extends Token
+    case class SectionEnd(index: Int, name: String) extends Token
+    case class Variable(index: Int, name: String, unescape: Boolean) extends Token
   }
 
-  private def tokenize1(s: String, pos: Int, open: Boolean): Stream[Token] = {
-    def findToken(delim: String): Option[(Int, String)] =
+  private case class InternToken(index: Int, value: String, kind: InternToken.Type = InternToken.Text)
+  private object InternToken {
+    sealed trait Type
+    case object OpenSection extends Type
+    case object OpenInverse extends Type
+    case object OpenEndSection extends Type
+    case object OpenVariable extends Type
+    case object OpenUnescape extends Type
+    case object Close extends Type
+    case object Text extends Type
+
+    val types = Map[String, Type](
+      "{{#" -> OpenSection
+        , "{{^" -> OpenInverse
+        , "{{/" -> OpenEndSection
+        , "{{" -> OpenVariable
+        , "{{&" -> OpenUnescape
+        , "}}" -> Close
+    ).withDefaultValue(Text)
+
+    val openTokens = types.keys.filterNot("}}" == _).toList.sortBy(-_.length)
+    val closeTokens = List("}}")
+  }
+
+  private def tokenize1(s: String, pos: Int, open: Boolean): Stream[InternToken] = {
+    def findToken(delim: String): Option[InternToken] =
       s.indexOf(delim, pos) match {
         case -1 => None
-        case n => Some((n, delim))
+        case n => Some(InternToken(n, delim))
       }
 
-    def sort(in: List[Option[(Int,String)]]): List[(Int, String)] =
-      in.collect({case Some(x) => x}).sortBy(_._1)
+    def sort(in: List[Option[InternToken]]): List[InternToken] =
+      in.collect({case Some(x) => x}).sortBy(_.index)
 
     val next = sort {
-      if (!open) Token.openTokens.map(findToken)
-      else Token.closeTokens.map(findToken)
+      if (!open) InternToken.openTokens.map(findToken)
+      else InternToken.closeTokens.map(findToken)
     }
 
     next.headOption match {
-      case Some((n, t)) =>
-        val delim = if (open) Token.Close(n) else Token.openKinds(t)(n)
+      case Some(token@InternToken(n, t, _)) =>
+        val delim = if (open) InternToken(n,t, InternToken.Close) else InternToken(n, t, InternToken.types(t))
         val rest = delim #:: tokenize1(s, n+t.length, !open)
         val prefix = s.substring(pos, n)
         if (prefix.isEmpty) rest
-        else Token.Text(prefix, pos) #:: rest
+        else InternToken(pos, prefix) #:: rest
       case None =>
         val last = s.substring(pos)
         if (last.isEmpty) Stream.empty
-        else Stream(Token.Text(last, pos))
+        else Stream(InternToken(pos, last))
     }
   }
 
-  def tokenize(s: String): Stream[Token] =
-    tokenize1(s, 0, false)
+  def tokenize(s: String): Stream[Token] = {
+    import InternToken._
+
+    def extract(a: InternToken, b: InternToken)(f: String => Token) =
+      (a, b) match {
+        case (InternToken(_, value, Text), InternToken(_, _, Close)) =>
+          f(value)
+        case _ =>
+          // TODO raise error ?
+          Token.Text(a.value + b.value, a.index)
+      }
+
+    def loop(ts: Stream[InternToken]): Stream[Token] =
+      ts match {
+        case a #:: b #:: c #:: rest =>
+          a match {
+            case InternToken(idx, _, OpenSection) =>
+              extract(b,c)(Token.SectionStart(idx, _, false)) #:: loop(rest)
+
+            case InternToken(idx, _, OpenInverse) =>
+              extract(b,c)(Token.SectionStart(idx, _, true)) #:: loop(rest)
+
+            case InternToken(idx, _, OpenEndSection) =>
+              extract(b,c)(Token.SectionEnd(idx, _)) #:: loop(rest)
+
+            case InternToken(idx, _, OpenVariable) =>
+              extract(b,c)(Token.Variable(idx, _, false)) #:: loop(rest)
+
+            case InternToken(idx, _, OpenUnescape) =>
+              extract(b,c)(Token.Variable(idx, _, true)) #:: loop(rest)
+
+            case InternToken(idx, value, Close) =>
+              // ignore the type and return as text
+              // TODO maye throw unbalanced error here
+              Token.Text(value, idx) #:: loop(b #:: c #:: rest)
+            case InternToken(idx, value, Text) =>
+              Token.Text(value, idx) #:: loop(b #:: c #:: rest)
+          }
+        case a #:: b #:: Stream.Empty =>
+          // ignore types and pass as text
+          Stream(Token.Text(a.value + b.value, a.index))
+        case a #:: Stream.Empty =>
+          // ignore all other types, pass as text
+          Stream(Token.Text(a.value, a.index))
+        case Stream.Empty =>
+          Stream.Empty
+      }
+
+    loop(tokenize1(s, 0, false))
+  }
 
 
 
   private def err[A](msg: String, index: Int): Either[ParseErr, A] = Left(ParseErr(msg, index))
 
+  private[yamusca] def handleWS(tokens: Stream[Token]): Stream[Token] = {
+    import Token._
+    tokens match {
+      case (a@Text(t1, idx1)) #:: (b: SectionStart) #:: (c@Text(t2, idx2)) #:: rest =>
+        if (util.isStandalone(t1, t2)) {
+          Text(util.removeEndingWS(t1), idx1) #:: handleWS(b #:: Text(util.removeStartingWS(t2), idx2) #:: rest)
+        } else {
+          a #:: handleWS(b #:: c #:: rest)
+        }
+
+      case (a@Text(t1, idx1)) #:: (b: SectionEnd) #:: (c@Text(t2, idx2)) #:: rest =>
+        if (util.isStandalone(t1, t2)) {
+          Text(util.removeEndingWS(t1), idx1) #:: handleWS(b #:: Text(util.removeStartingWS(t2), idx2) #:: rest)
+        } else {
+          a #:: handleWS(b #:: c #:: rest)
+        }
+
+      case Text(t, idx) #:: (s: SectionEnd) #:: Stream.Empty  =>
+        // scala 2.11
+        val first: Token = Text(util.removeEndingWS(t), idx)
+        val second: Token = s
+        first #:: second #:: Stream.Empty
+
+      case (s: SectionEnd) #:: Text(t, idx) #:: Stream.Empty =>
+        // scala 2.11
+        val first: Token = s
+        val second: Token = Text(util.removeEndingWS(t), idx)
+        first #:: second  #:: Stream.Empty
+
+      case a #:: rest =>
+        a #:: handleWS(rest)
+
+      case Stream.Empty =>
+        Stream.Empty
+    }
+  }
 
   def parse(s: String): ParseResult = {
     import Token._
 
-    def loop(tokens: Stream[Token], result: Vector[Element], name: List[String]): Either[ParseErr, (Vector[Element], Stream[Token])] = {
+    def loop(tokens: Stream[Token], result: Vector[Element], name: List[String]): Either[ParseErr, (Vector[Element], Stream[Token])] =
       tokens match {
-        case a #:: b #:: c #:: rest =>
-          a match {
-            case Text(t, _) =>
-              loop(b #:: c #:: rest, result :+ Literal(t), name)
-
-            case Close(idx) =>
-              err("Expected literal or {{, but got }}", idx)
-
-            case OpenVariable(_) =>
-              (b, c) match {
-                case (Text(t, _), Close(_)) =>
-                  loop(rest, result :+ Variable(t.trim), name)
-                case _ =>
-                  err(s"Expected text after {{, but got $b$c", b.index)
-              }
-
-            case OpenUnescape(_) =>
-              (b, c) match {
-                case (Text(t, _), Close(_)) =>
-                  loop(rest, result :+ Variable(t.trim, true), name)
-                case _ =>
-                  err(s"Expected text after {{&, but got $b$c", b.index)
-              }
-
-            case OpenEndSection(_) =>
-              (b, c) match {
-                case (Text(t, _), Close(_)) =>
-                  if (Some(t) == name.headOption) Right((result, rest))
-                  else err(s"Expected end-section named ${name.headOption}, but got endsection ${Some(t)}", b.index)
-                case _ =>
-                  err(s"Expected text after {{/, but got $b$c", b.index)
-              }
-            case OpenSection(_) =>
-              (b, c) match {
-                case (Text(t, _), Close(_)) =>
-                  loop(rest, Vector.empty, t :: name) match {
-                    case Right((inner, more)) =>
-                      loop(more, result :+ Section(t.trim, inner.toSeq), name)
-                    case Left(e) => Left(e)
-                  }
-                case _ =>
-                  err(s"Expected text after {{#, but got $b$c", b.index)
-              }
-            case OpenInverse(_) =>
-              (b, c) match {
-                case (Text(t, _), Close(_)) =>
-                  loop(rest, Vector.empty, t :: name) match {
-                    case Right((inner, more)) =>
-                      loop(more, result :+ Section(t.trim, inner.toSeq, true), name)
-                    case Left(e) => Left(e)
-                  }
-                case _ =>
-                  err(s"Expected text after {{^, but got $b$c", b.index)
-              }
+        case Text(t, _) #:: rest =>
+          loop(rest, result :+ Literal(t), name)
+        case SectionStart(idx, t, inverted) #:: rest =>
+          loop(rest, Vector.empty, t :: name) match {
+            case Right((inner, more)) =>
+              loop(more, result :+ Section(t.trim, inner.toSeq, inverted), name)
+            case Left(e) => Left(e)
           }
+        case SectionEnd(idx, t) #:: rest =>
+          if (Some(t) == name.headOption) Right((result, rest))
+          else err(s"Expected end-section named ${name.headOption}, but got endsection ${Some(t)}", idx)
 
-        case a #:: b #:: Stream.Empty =>
-          err(s"Invalid template: $a$b. Maybe a closing }} missing?", a.index)
+        case Variable(idx, t, unescape) #:: rest =>
+          loop(rest, result :+ data.Variable(t.trim, unescape), name)
 
-        case a #:: Stream.Empty =>
-          a match {
-            case Text(t, _) => Right((result :+ Literal(t), Stream.empty))
-            case o: Open => err(s"Expected text but got $a", o.index)
-            case Close(idx) => err(s"Expected text but got }}", idx)
-          }
-        case _ =>
+        case Stream.Empty =>
           Right((result, Stream.empty))
       }
-    }
 
-    loop(tokenize(s), Vector.empty, Nil) match {
+
+    loop(handleWS(tokenize(s)), Vector.empty, Nil) match {
       case Right((els, Stream.Empty)) => Right(Template(els))
       case Right((els, rest)) => err(s"Unbalanced template: ${rest.toList}", rest.head.index)
       case Left(err) => Left(err)

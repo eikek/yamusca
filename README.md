@@ -3,12 +3,21 @@ yamusca
 
 Yet another mustache parser/rendrer for scala.
 
-Features
---------
+Goals
+-----
 
 -   zero dependencies
 -   type safe and functional template data
 -   simple and easy to use
+
+### Not (yet) supported
+
+-   Partials
+-   Comments
+-   triple mustache (`{{{`)
+-   dotted access (`{{a.b.c}}`)
+-   custom delimiters
+-   iterating nested lists
 
 Using
 -----
