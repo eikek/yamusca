@@ -56,19 +56,9 @@ object expand {
 
     implicit def sectionExpand(implicit e1: Expand[Literal], e2: Expand[Variable]): Expand[Section] =
       new Expand[Section] {
-        val expandElement: Expand[Element] = new Expand[Element] {
-          def apply(consume: String => Unit)(e: Element): Find[Unit] = {
-            e match {
-              case v: Literal => e1(consume)(v)
-              case v: Variable => e2(consume)(v)
-              case v: Section => sectionExpand(e1, e2)(consume)(v)
-            }
-          }
-        }
-
         def apply(consume: String => Unit)(s: Section): Find[Unit] = {
           val expandInner: Find[Unit] = {
-            val r = templateExpand(expandElement)
+            val r = templateExpand(elementExpand(e1, e2, this))
             r(consume)(Template(s.inner))
           }
 

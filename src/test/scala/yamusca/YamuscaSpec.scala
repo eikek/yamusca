@@ -10,7 +10,7 @@ import yamusca.util._
 class YamuscaSpec extends FlatSpec with Matchers {
 
   "stackedcontext" should "replace correct positions" in {
-    val sc = Context("name" -> Value.of("red")) :: Context("name" -> Value.of("red")) :: Context.empty
+    val sc = Context("name" -> Value.of("red")) :: Context("name" -> Value.of("blue")) :: Context.empty
     val (c2, Some(v)) = sc.find("name")
     v should be (Value.of("red"))
     c2 should be (sc)
@@ -319,7 +319,7 @@ class YamuscaSpec extends FlatSpec with Matchers {
     mustache.render(t)(data).visible should be (expected.visible)
   }
 
-  ignore should "iterate nested arrays" in {
+  it should "iterate nested arrays" in {
     val data = Context("list" ->
       Value.seq(
         Value.fromSeq(List("1","2","3").map(Value.of)),
