@@ -28,7 +28,6 @@ Yet another mustache parser/rendrer for scala.
 - triple mustache (~{{{~)
 - dotted access (~{{a.b.c}}~)
 - custom delimiters
-- iterating nested lists
 
 ** Using
 

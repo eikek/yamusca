@@ -17,7 +17,6 @@ Goals
 -   triple mustache (`{{{`)
 -   dotted access (`{{a.b.c}}`)
 -   custom delimiters
--   iterating nested lists
 
 Using
 -----

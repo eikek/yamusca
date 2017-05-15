@@ -6,36 +6,52 @@ object context {
 
   trait Context {
     def find(key: String): (Context, Option[Value])
-    def :: (head: Context): Context = new StackedContext(List(head, this))
+    def :: (head: Context): Context = Context.prepend(head, this)
+
     def tail: Context = this match {
       case c: StackedContext =>
-        val rest = c.cs.tail
-        if (rest.isEmpty) Context.empty
-        else new StackedContext(rest)
+        c.rest match {
+          case Nil => Context.empty
+          case a :: rest => StackedContext(a, rest)
+        }
       case _ => this
     }
   }
 
-  private case class StackedContext(val cs: List[Context]) extends Context {
-    require(cs.nonEmpty, "empty list for stacked context")
+  private case class StackedContext(first: Context, rest: List[Context]) extends Context {
     def find(key: String): (Context, Option[Value]) = {
-      val (list, value) = cs.foldRight((List[Context](), None:Option[Value])) {
-        case (ctx, (list, value)) =>
-          if (value.isDefined) (ctx :: list, value)
-          else {
-            val (c, v) = ctx.find(key)
-            (c :: list, v)
-          }
-      }
-      if (list == cs) (this, value)
-      else (StackedContext(list), value)
+      @annotation.tailrec
+      def loop(rest: List[Context], tried: Vector[Context]): (Context, Option[Value]) =
+        rest match {
+          case a :: rest =>
+            a.find(key) match {
+              case (next, v: Some[_]) =>
+                val newCtx = (tried :+ next).toList ::: rest
+                (StackedContext(newCtx.head, newCtx.tail), v)
+              case (next, v) =>
+                loop(rest, tried :+ next)
+            }
+          case _ =>
+            if (tried.isEmpty) (Context.empty, None)
+            else (StackedContext(tried.head, tried.tail.toList), None)
+        }
+
+      loop(first :: rest, Vector.empty)
     }
-    override def :: (head: Context) = StackedContext(head :: cs)
   }
 
   object Context {
+    private def prepend(c1: Context, c2: Context): Context =
+      (c1, c2) match {
+        case (StackedContext(ch, ct), StackedContext(dh, dt)) => StackedContext(ch, ct ::: List(dh) ::: dt)
+        case (StackedContext(ch, ct), d) => StackedContext(ch, ct ::: List(d))
+        case (c, StackedContext(dh, dt)) => StackedContext(c, dh :: dt)
+        case (c, d) => StackedContext(c, List(d))
+      }
+
     val empty: Context = new Context {
       def find(key: String) = (this, None)
+      override def toString(): String = "Context.empty"
     }
 
     def fromMap(m: Map[String, Value]): Context = new Context {
