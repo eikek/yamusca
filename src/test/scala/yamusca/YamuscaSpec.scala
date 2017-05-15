@@ -9,6 +9,14 @@ import yamusca.util._
 
 class YamuscaSpec extends FlatSpec with Matchers {
 
+  def expectResult(template: String, expected: String, data: Context): Unit = {
+    val t = mustache.parse(template) match {
+      case Right(x) => x
+      case Left(err) => fail(s"Template parsing failed: $err")
+    }
+    mustache.render(t)(data).visible should be (expected.visible)
+  }
+
   "stackedcontext" should "replace correct positions" in {
     val sc = Context("name" -> Value.of("red")) :: Context("name" -> Value.of("blue")) :: Context.empty
     val (c2, Some(v)) = sc.find("name")
@@ -329,5 +337,66 @@ class YamuscaSpec extends FlatSpec with Matchers {
     val expected = "'(123)(abc)'"
     val t = mustache.parse(template).right.get
     mustache.render(t)(data).visible should be (expected.visible)
+  }
+
+  "comment" should "be removed" in {
+    val template = "123{{! this is a comment }}456"
+    val expected = "123456"
+    val t = mustache.parse(template).right.get
+    mustache.render(t)(Context.empty) should be (expected)
+  }
+
+  it should "remove the whole line" in {
+    val template = """|Begin.
+      |  {{! this is a comment }}
+      |End.""".stripMargin
+    val expected = """|Begin.
+      |End.""".stripMargin
+
+    expectResult(template, expected, Context.empty)
+  }
+
+  it should "not require a preceeding newline" in {
+    expectResult(
+      "   {{! not here }}\n!",
+      "!",
+      Context.empty
+    )
+  }
+
+  it should "not require a newline to follow" in {
+    expectResult(
+      "!\n  {{! remove me }}",
+      "!\n",
+      Context.empty
+    )
+  }
+
+  it should "remove multiline comments" in {
+    expectResult(
+      """Begin.
+        |{{!
+        |  Something is going on here ...
+        |}}
+        |End.""".stripMargin,
+      "Begin.\nEnd.",
+      Context.empty
+    )
+  }
+
+  it should "not strip whitespace on inline comments" in {
+    expectResult(
+      "   12  {{! 24 }}\n",
+      "   12  \n",
+      Context.empty
+    )
+  }
+
+  it should "not remove surrounding whitespace" in {
+    expectResult(
+      "123 {{! removed }} 456",
+      "123  456",
+      Context.empty
+    )
   }
 }

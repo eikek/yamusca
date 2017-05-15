@@ -47,7 +47,7 @@ private[yamusca] object util {
 
   def isStandalone(prefix: String, suffix: String): Boolean = {
     val sub1 = trimLineLeft(removeStartingWS(suffix))
-    val sub2 = trimLineRight(removeEndingWS(prefix).trim)
+    val sub2 = trimLineRight(removeEndingWS(prefix))
     sub1 != suffix && sub2 != prefix
   }
 

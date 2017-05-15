@@ -24,7 +24,6 @@ Yet another mustache parser/rendrer for scala.
 *** Not (yet) supported
 
 - Partials
-- Comments
 - triple mustache (~{{{~)
 - dotted access (~{{a.b.c}}~)
 - custom delimiters
