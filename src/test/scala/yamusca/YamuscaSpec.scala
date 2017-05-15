@@ -399,4 +399,20 @@ class YamuscaSpec extends FlatSpec with Matchers {
       Context.empty
     )
   }
+
+  "triple mustache" should "behave like unescape variable" in {
+    expectResult(
+      "unescaped please: {{{forbidden}}}",
+      "unescaped please: & \" < >",
+      Context("forbidden" -> Value.of("& \" < >"))
+    )
+  }
+
+  it should "interpolate integers normal" in {
+    expectResult(
+      "{{{mph}}} fast",
+      "85 fast",
+      Context("mph" -> Value.of("85"))
+    )
+  }
 }

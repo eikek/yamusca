@@ -43,12 +43,14 @@ object parser {
         , "{{/" -> OpenEndSection
         , "{{" -> OpenVariable
         , "{{&" -> OpenUnescape
+        , "{{{" -> OpenUnescape
         , "{{!" -> OpenComment
         , "}}" -> Close
+        , "}}}" -> Close
     ).withDefaultValue(Text)
 
-    val openTokens = types.keys.filterNot("}}" == _).toList.sortBy(-_.length)
-    val closeTokens = List("}}")
+    val openTokens = types.keys.filterNot(Set("}}", "}}}").contains).toList.sortBy(-_.length)
+    val closeTokens = List("}}}", "}}")
   }
 
   private def tokenize1(s: String, pos: Int, open: Boolean): Stream[InternToken] = {
