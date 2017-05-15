@@ -33,7 +33,7 @@ Using [[http://scala-sbt.org][sbt]]:
 
 #+begin_src scala :exports both
 libraryDependencies ++= Seq(
-  "com.github.eikek" %% "yamusca" % "0.1.0"
+  "com.github.eikek" %% "yamusca" % "0.2.0"
 )
 #+end_src
 
@@ -59,7 +59,7 @@ mustache.render(templ.right.get)(data)
 The following is an [[http://www.lihaoyi.com/Ammonite/][Ammonite]] script showing a (contrived) example:
 
 #+begin_src scala :exports both
-import $ivy.`com.github.eikek::yamusca:0.2.0-SNAPSHOT`
+import $ivy.`com.github.eikek::yamusca:0.2.0`
 import ammonite.ops._
 import java.nio.file.Files
 import java.security.MessageDigest

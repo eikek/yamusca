@@ -23,7 +23,7 @@ Using [sbt](http://scala-sbt.org):
 
 ``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
 libraryDependencies ++= Seq(
-  "com.github.eikek" %% "yamusca" % "0.1.0"
+  "com.github.eikek" %% "yamusca" % "0.2.0"
 )
 ```
 
@@ -52,7 +52,7 @@ The following is an [Ammonite](http://www.lihaoyi.com/Ammonite/) script
 showing a (contrived) example:
 
 ``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
-import $ivy.`com.github.eikek::yamusca:0.2.0-SNAPSHOT`
+import $ivy.`com.github.eikek::yamusca:0.2.0`
 import ammonite.ops._
 import java.nio.file.Files
 import java.security.MessageDigest
