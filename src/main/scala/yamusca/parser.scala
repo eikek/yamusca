@@ -9,6 +9,12 @@ object parser {
 
   sealed trait Token {
     def index: Int
+    def isStandaloneToken: Boolean = this match {
+      case _: Token.SectionStart => true
+      case _: Token.SectionEnd => true
+      case _: Token.Comment => true
+      case _ => false
+    }
   }
 
   object Token {
@@ -16,6 +22,7 @@ object parser {
     case class SectionStart(index: Int, name: String, inverted: Boolean) extends Token
     case class SectionEnd(index: Int, name: String) extends Token
     case class Variable(index: Int, name: String, unescape: Boolean) extends Token
+    case class Comment(index: Int, value: String) extends Token
   }
 
   private case class InternToken(index: Int, value: String, kind: InternToken.Type = InternToken.Text)
@@ -26,6 +33,7 @@ object parser {
     case object OpenEndSection extends Type
     case object OpenVariable extends Type
     case object OpenUnescape extends Type
+    case object OpenComment extends Type
     case object Close extends Type
     case object Text extends Type
 
@@ -35,11 +43,14 @@ object parser {
         , "{{/" -> OpenEndSection
         , "{{" -> OpenVariable
         , "{{&" -> OpenUnescape
+        , "{{{" -> OpenUnescape
+        , "{{!" -> OpenComment
         , "}}" -> Close
+        , "}}}" -> Close
     ).withDefaultValue(Text)
 
-    val openTokens = types.keys.filterNot("}}" == _).toList.sortBy(-_.length)
-    val closeTokens = List("}}")
+    val openTokens = types.keys.filterNot(Set("}}", "}}}").contains).toList.sortBy(-_.length)
+    val closeTokens = List("}}}", "}}")
   }
 
   private def tokenize1(s: String, pos: Int, open: Boolean): Stream[InternToken] = {
@@ -102,6 +113,9 @@ object parser {
             case InternToken(idx, _, OpenUnescape) =>
               extract(b,c)(Token.Variable(idx, _, true)) #:: loop(rest)
 
+            case InternToken(idx, value, OpenComment) =>
+              extract(b,c)(Token.Comment(idx, _)) #:: loop(rest)
+
             case InternToken(idx, value, Close) =>
               // ignore the type and return as text
               // TODO maye throw unbalanced error here
@@ -129,31 +143,22 @@ object parser {
   private[yamusca] def handleWS(tokens: Stream[Token]): Stream[Token] = {
     import Token._
     tokens match {
-      case (a@Text(t1, idx1)) #:: (b: SectionStart) #:: (c@Text(t2, idx2)) #:: rest =>
-        if (util.isStandalone(t1, t2)) {
+      case (a@Text(t1, idx1)) #:: b #:: (c@Text(t2, idx2)) #:: rest =>
+        if (b.isStandaloneToken && util.isStandalone(t1, t2)) {
           Text(util.removeEndingWS(t1), idx1) #:: handleWS(b #:: Text(util.removeStartingWS(t2), idx2) #:: rest)
         } else {
           a #:: handleWS(b #:: c #:: rest)
         }
 
-      case (a@Text(t1, idx1)) #:: (b: SectionEnd) #:: (c@Text(t2, idx2)) #:: rest =>
-        if (util.isStandalone(t1, t2)) {
-          Text(util.removeEndingWS(t1), idx1) #:: handleWS(b #:: Text(util.removeStartingWS(t2), idx2) #:: rest)
-        } else {
-          a #:: handleWS(b #:: c #:: rest)
-        }
-
-      case Text(t, idx) #:: (s: SectionEnd) #:: Stream.Empty  =>
+      case Text(t, idx) #:: b #:: Stream.Empty if b.isStandaloneToken =>
         // scala 2.11
         val first: Token = Text(util.removeEndingWS(t), idx)
-        val second: Token = s
-        first #:: second #:: Stream.Empty
+        first #:: b #:: Stream.Empty
 
-      case (s: SectionEnd) #:: Text(t, idx) #:: Stream.Empty =>
+      case a #:: Text(t, idx) #:: Stream.Empty if a.isStandaloneToken =>
         // scala 2.11
-        val first: Token = s
         val second: Token = Text(util.removeEndingWS(t), idx)
-        first #:: second  #:: Stream.Empty
+        a #:: second  #:: Stream.Empty
 
       case a #:: rest =>
         a #:: handleWS(rest)
@@ -182,6 +187,9 @@ object parser {
 
         case Variable(idx, t, unescape) #:: rest =>
           loop(rest, result :+ data.Variable(t.trim, unescape), name)
+
+        case Comment(idx, value) #:: rest =>
+          loop(rest, result :+ data.Comment(value), name)
 
         case Stream.Empty =>
           Right((result, Stream.empty))

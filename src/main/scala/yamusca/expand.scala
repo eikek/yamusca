@@ -40,6 +40,8 @@ object expand {
 
     implicit val literalExpand: Expand[Literal] = Expand(e => Find.unit(e.text))
 
+    implicit val commentExpand: Expand[Comment] = Expand(e => Find.unit(""))
+
     implicit val variableExpand: Expand[Variable] = Expand {
       case Variable(key, unescape) => Find.findOrEmpty(key).map {
         case SimpleValue(s) => if (unescape) s else escapeHtml(s)
@@ -54,11 +56,11 @@ object expand {
       }
     }
 
-    implicit def sectionExpand(implicit e1: Expand[Literal], e2: Expand[Variable]): Expand[Section] =
+    implicit def sectionExpand(implicit e1: Expand[Literal], e2: Expand[Variable], e3: Expand[Comment]): Expand[Section] =
       new Expand[Section] {
         def apply(consume: String => Unit)(s: Section): Find[Unit] = {
           val expandInner: Find[Unit] = {
-            val r = templateExpand(elementExpand(e1, e2, this))
+            val r = templateExpand(elementExpand(e1, e2, this, e3))
             r(consume)(Template(s.inner))
           }
 
@@ -78,13 +80,14 @@ object expand {
         }
       }
 
-    implicit def elementExpand(implicit e1: Expand[Literal], e2: Expand[Variable], e3: Expand[Section]): Expand[Element] =
+    implicit def elementExpand(implicit e1: Expand[Literal], e2: Expand[Variable], e3: Expand[Section], e4: Expand[Comment]): Expand[Element] =
       new Expand[Element] {
         def apply(consume: String => Unit)(e: Element): Find[Unit] =
           e match {
             case v: Literal => e1(consume)(v)
             case v: Variable => e2(consume)(v)
             case v: Section => e3(consume)(v)
+            case v: Comment => e4(consume)(v)
           }
       }
 

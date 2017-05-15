@@ -13,7 +13,7 @@
 
 * yamusca
 
-Yet another mustache parser/rendrer for scala.
+Yet another mustache parser/renderer for scala.
 
 ** Goals
 
@@ -24,8 +24,6 @@ Yet another mustache parser/rendrer for scala.
 *** Not (yet) supported
 
 - Partials
-- Comments
-- triple mustache (~{{{~)
 - dotted access (~{{a.b.c}}~)
 - custom delimiters
 
