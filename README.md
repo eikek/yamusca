@@ -1,6 +1,9 @@
 yamusca
 =======
 
+<a href="https://travis-ci.org/eikek/yamusca"><img src="https://travis-ci.org/eikek/yamusca.svg"></a>
+<a href="https://maven-badges.herokuapp.com/maven-central/com.github.eikek/yamusca_2.12"><img src="https://img.shields.io/maven-central/v/com.github.eikek/yamusca_2.12.svg"></a>
+
 Yet another mustache parser/renderer for scala.
 
 Goals
