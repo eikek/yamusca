@@ -1,6 +1,6 @@
 package yamusca.parser
 
-case class Delim(start: String, end: String) {
+final case class Delim(start: String, end: String) {
   val length = start.length + end.length
 }
 

@@ -1,6 +1,6 @@
 package yamusca.parser
 
-case class ParseInput(raw: String, pos: Int, end: Int, delim: Delim) {
+final case class ParseInput(raw: String, pos: Int, end: Int, delim: Delim) {
   lazy val current: String =
     if (exhausted) ""
     else raw.substring(pos, end)

@@ -62,6 +62,8 @@ trait Parsers {
     Right((in.copy(pos = idx), ()))
   }
 
+  val ignoreWs: Parser[Unit] = consumeWhile(c => c == ' ' || c == '\t')
+
   val atEnd: Parser[Unit] = { in =>
     if (in.exhausted) Right((in, ()))
     else Left(in -> "input is not exhausted")

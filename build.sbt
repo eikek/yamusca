@@ -1,3 +1,4 @@
+import com.typesafe.sbt.pgp.PgpKeys.publishSigned
 import libs._
 
 lazy val commonSettings = Seq(
@@ -57,3 +58,19 @@ lazy val yamusca = (project in file(".")).
     libraryDependencies ++= Seq(
       scalatest
     ).map(_ % "test"))
+
+
+lazy val benchmark = project.in(file("benchmark")).
+  enablePlugins(JmhPlugin).
+  settings(commonSettings).
+  settings(
+    name := "yamusca-benchmark",
+    publish := (),
+    publishLocal := (),
+    publishSigned := (),
+    publishArtifact := false
+  ).
+  dependsOn(yamusca)
+
+
+addCommandAlias("bench-parse-quick", ";project benchmark ;jmh:run -f1 -wi 2 -i 2 .*ParserBenchmark")

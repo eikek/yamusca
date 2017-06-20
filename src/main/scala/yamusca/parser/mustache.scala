@@ -33,8 +33,7 @@ object mustache extends Parsers {
     }
 
   def standalone[A](p: Parser[A]): Parser[A] = {
-    val ws = consumeWhile(c => c == ' ' || c == '\t')
-    val withWs = (ws ~ p ~ ws ~ (newLine or atEnd).map(_ => ())).map {
+    val withWs = (ignoreWs ~ p ~ ignoreWs ~ (newLine or atEnd).map(_ => ())).map {
       case (((_, a), _), _) => a
     }
 
@@ -100,19 +99,25 @@ object mustache extends Parsers {
       map({ case (_, _, name) => name.trim })
 
   def consumeUntilEndSection(name: String): Parser[ParseInput] = { in =>
+    val delim = in.delim.start + "/"
+    val stop: ParseInput => Boolean = in => {
+      (ignoreWs ~ consume(name))(in).isRight
+    }
     @annotation.tailrec
     def go(pin: ParseInput): Option[(ParseInput, ParseInput)] =
-      pin.splitAtNext(in.delim.start + "/") match {
-        case None =>
-          None
-        case Some((left, right)) =>
+      pin.splitAtNext(delim) match {
+        case Some((left, right)) if stop(right.dropLeft(delim.length)) =>
           standaloneOr(parseEndSection)(right) match {
-            case Right((next, n)) if n == name =>
+            case Right((next, n)) =>
               Some((in.copy(end = left.end), next))
 
             case _ =>
-              go(pin.dropLeft(in.delim.start.length + 1))
+              go(pin.dropLeft(delim.length))
           }
+        case Some(_) =>
+          go(pin.dropLeft(delim.length))
+        case _ =>
+          None
       }
 
     go(in) match {
