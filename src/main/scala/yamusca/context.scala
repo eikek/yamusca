@@ -138,6 +138,21 @@ object context {
     def findOrEmpty(key: String): Find[Value] =
       find(key).map(_.getOrElse(Value.of(false)))
 
+    def findOrEmptyPath(path: String): Find[Value] = {
+      if (path == "." || path.indexOf('.') == -1) findOrEmpty(path)
+      else {
+        val parts = path.split('.').toList
+        parts.map(findOrEmpty).reduce({ (f1, f2) =>
+          f1.flatMap {
+            case v if !v.isEmpty =>
+              f2.stacked(v.asContext)
+            case v =>
+              unit(v)
+          }
+        })
+      }
+    }
+
     def get: Find[Context] = Find(s => (s, s))
 
     def set(state: Context): Find[Unit] = Find(_ => (state, ()))

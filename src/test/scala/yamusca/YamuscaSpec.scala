@@ -35,6 +35,14 @@ class YamuscaSpec extends FlatSpec with Matchers {
     t.renderResult(context) should be ("Hello Harry!")
   }
 
+  it should "replace variables by dotted access" in {
+    expectResult(
+      "{{a.b}}",
+      "hello",
+      Context("a" -> Value.map("b" -> Value.of("hello")))
+    )
+  }
+
   it should "render nothing for non-existing vars" in {
     val t = Template(Literal("Hello "), Variable("name"), Literal("!"))
     t.renderResult(Context.empty) should be ("Hello !")
@@ -57,6 +65,14 @@ class YamuscaSpec extends FlatSpec with Matchers {
     t.renderResult(Context("name" -> Value.of(true))) should be ("Hello ")
     t.renderResult(Context("name" -> Value.seq())) should be ("Hello World!")
     t.renderResult(Context("name" -> Value.seq(Value.of("haha")))) should be ("Hello ")
+  }
+
+  it should "render sections with dotted access" in {
+    expectResult(
+      "{{#a.b}}{{name}}{{/a.b}}",
+      "hello",
+      Context("a" -> Value.map("b" -> Value.map("name" -> Value.of("hello"))))
+    )
   }
 
   it should "render simple lists" in {

@@ -43,7 +43,7 @@ object expand {
     implicit val commentExpand: Expand[Comment] = Expand(e => Find.unit(""))
 
     implicit val variableExpand: Expand[Variable] = Expand {
-      case Variable(key, unescape) => Find.findOrEmpty(key).map {
+      case Variable(key, unescape) => Find.findOrEmptyPath(key).map {
         case SimpleValue(s) => if (unescape) s else escapeHtml(s)
         case BoolValue(b) => if (b) b.toString else ""
         case MapValue(_, e) =>
@@ -64,7 +64,7 @@ object expand {
             r(consume)(Template(s.inner))
           }
 
-          Find.findOrEmpty(s.key).flatMap {
+          Find.findOrEmptyPath(s.key).flatMap {
             case v if s.inverted =>
               if (v.isEmpty) expandInner
               else Find.unit(())
