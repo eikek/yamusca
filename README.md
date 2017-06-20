@@ -13,6 +13,12 @@ Goals
 -   type safe and functional template data
 -   simple and easy to use
 
+### Supported features
+
+-   triple mustache (`{{{`)
+-   dotted access (`{{a.b.c}}`)
+-   custom delimiters (`{{= … =}}`)
+
 ### Not supported
 
 -   Partials
