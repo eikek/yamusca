@@ -68,7 +68,10 @@ lazy val benchmark = project.in(file("benchmark")).
     publish := (),
     publishLocal := (),
     publishSigned := (),
-    publishArtifact := false
+    publishArtifact := false,
+    libraryDependencies ++= Seq(
+      `mustache-java`, `circe-parser`, `circe-generic`
+    )
   ).
   dependsOn(yamusca)
 

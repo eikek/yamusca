@@ -16,7 +16,7 @@ object mustache extends Parsers {
   def parseTag(p: Char => Boolean): Parser[(Delim, Char, String)] = {
     in => {
       val d = in.delim
-        (consume(d.start) ~ nextChar(p) ~ nonEmpty(consumeUntil(d.end)) ~ consume(d.end)).
+      (consume(d.start) ~ nextChar(p) ~ nonEmpty(consumeUntil(d.end)) ~ consume(d.end)).
         map({ case (((_, c) , name), _) => (d, c, name) })(in)
     }
   }
@@ -45,7 +45,6 @@ object mustache extends Parsers {
 
   def standaloneOr[A](p: Parser[A]): Parser[A] =
     standalone(p) or p
-
 
   val parseSetDelimiter: Parser[Unit] = { in =>
     tag(Delim(in.delim.start+"=", "="+in.delim.end))(in) match {
@@ -127,19 +126,16 @@ object mustache extends Parsers {
   }
 
   val parseSection: Parser[Section] =
-    standaloneOr(parseStartSection).flatMap {
+    parseStartSection.flatMap {
       case (inverse, name) =>
         consumeUntilEndSection(name).
           emap(in => parseTemplate(in).left.map(_._2).right.map(_._2)).
           map(t => Section(name, t.els, inverse))
     }
 
-
   lazy val parseElement: Parser[Element] =
     parseSetDelimiter.map(_ => Literal("")).or(parseSection).or(parseComment).or(parseLiteral).or(parseVariable)
 
-
   lazy val parseTemplate: Parser[Template] =
     repeat(parseElement).map(Template.apply)
-
 }

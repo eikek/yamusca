@@ -37,7 +37,7 @@ trait Parsers {
   }
 
   val newLine: Parser[String] = (consume('\r').opt ~ consume('\n')).map {
-    case (r, n) => r.map(_.toString).getOrElse("") + "\n"
+    case (r, n) => if (r.isDefined) "\r\n" else "\n"
   }
 
   def consumeUntil(s: String): Parser[String] = { in =>
@@ -50,13 +50,8 @@ trait Parsers {
   def consumeWhile(p: Char => Boolean): Parser[Unit] = { in =>
     @annotation.tailrec
     def go(index: Int): Int =
-      if (index >= in.end) index
-      else in.raw.charAt(index) match {
-        case c if p(c) =>
-          go(index +1)
-        case _ =>
-          index
-      }
+      if (index >= in.end || !p(in.raw.charAt(index))) index
+      else go(index +1)
 
     val idx = go(in.pos)
     Right((in.copy(pos = idx), ()))

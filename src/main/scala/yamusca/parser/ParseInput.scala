@@ -1,13 +1,13 @@
 package yamusca.parser
 
 final case class ParseInput(raw: String, pos: Int, end: Int, delim: Delim) {
-  lazy val current: String =
+  def current: String =
     if (exhausted) ""
     else raw.substring(pos, end)
 
-  val exhausted: Boolean = pos >= end
+  def exhausted: Boolean = pos >= end
 
-  val length: Int =
+  def length: Int =
     if (exhausted) 0
     else end - pos
 
@@ -57,7 +57,7 @@ final case class ParseInput(raw: String, pos: Int, end: Int, delim: Delim) {
         else Some(takeLeft(n - pos) -> dropLeft(n - pos))
     }
 
-  lazy val standaloneStart: Option[Int] = {
+  def standaloneStart: Option[Int] = {
     @annotation.tailrec
     def go(index: Int): Option[Int] =
       if (index < 0) Some(0)
