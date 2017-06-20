@@ -415,4 +415,45 @@ class YamuscaSpec extends FlatSpec with Matchers {
       Context("mph" -> Value.of("85"))
     )
   }
+
+  "delimiters" should "change" in {
+    expectResult(
+      "{{=<% %>=}}(<%text%>)",
+      "(Hey!)",
+      Context("text" -> Value.of("Hey!"))
+    )
+  }
+
+  it should "change to regex special chars" in {
+    expectResult(
+      "({{=[ ]=}}[text])",
+      "(It worked!)",
+      Context("text" -> Value.of("It worked!"))
+    )
+  }
+
+  it should "persist outside sections" in {
+    expectResult(
+      """|[
+         |{{#section}}
+         |  {{data}}
+         |  |data|
+         |{{/section}}
+         |
+         |{{= | | =}}
+         ||#section|
+         |  {{data}}
+         |  |data|
+         ||/section|
+         |]""".stripMargin,
+      """|[
+         |  I got interpolated.
+         |  |data|
+         |
+         |  {{data}}
+         |  I got interpolated.
+         |]""".stripMargin,
+      Context("section" -> Value.of(true), "data" -> Value.of("I got interpolated."))
+    )
+  }
 }
