@@ -8,7 +8,7 @@ package object parser {
   type Parser[A] = ParseInput => ParseResult[A]
 
   final def parse(s: String): Either[(ParseInput, String), Template] = {
-    mustache.parseTemplate(ParseInput(s)).map(r => r._2)
+    mustache.parseTemplate(ParseInput(s)).right.map(r => r._2)
   }
 
   implicit final class ParserOps[A](val p: Parser[A]) extends AnyVal {

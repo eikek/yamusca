@@ -7,7 +7,7 @@ lazy val commonSettings = Seq(
   licenses := Seq("MIT" -> url("http://spdx.org/licenses/MIT")),
   homepage := Some(url("https://github.com/eikek")),
   scalaVersion := `scala-version`,
-  crossScalaVersions := Seq("2.11.8", `scala-version`),
+  crossScalaVersions := Seq("2.11.11", `scala-version`),
   scalacOptions ++= Seq(
     "-encoding", "UTF-8",
     "-Xfatal-warnings", // fail when there are warnings
