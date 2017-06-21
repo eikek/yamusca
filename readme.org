@@ -42,7 +42,7 @@ Using [[http://scala-sbt.org][sbt]]:
 
 #+begin_src scala :exports both
 libraryDependencies ++= Seq(
-  "com.github.eikek" %% "yamusca" % "0.2.0"
+  "com.github.eikek" %% "yamusca" % "0.3.0"
 )
 #+end_src
 
