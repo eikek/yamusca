@@ -51,16 +51,17 @@ lazy val publishSettings = Seq(
 )
 
 
-lazy val yamusca = (project in file(".")).
+lazy val core = (project in file("modules/core")).
   settings(commonSettings).
   settings(publishSettings).
   settings(
+    name := "yamusca-core",
     libraryDependencies ++= Seq(
       scalatest
     ).map(_ % "test"))
 
 
-lazy val benchmark = project.in(file("benchmark")).
+lazy val benchmark = project.in(file("modules/benchmark")).
   enablePlugins(JmhPlugin).
   settings(commonSettings).
   settings(
@@ -73,7 +74,10 @@ lazy val benchmark = project.in(file("benchmark")).
       `mustache-java`, `circe-parser`, `circe-generic`
     )
   ).
-  dependsOn(yamusca)
+  dependsOn(core)
 
+lazy val root = project.in(file(".")).
+  settings(commonSettings).
+  aggregate(core, benchmark)
 
 addCommandAlias("bench-parse-quick", ";project benchmark ;jmh:run -f1 -wi 2 -i 2 .*ParserBenchmark")
