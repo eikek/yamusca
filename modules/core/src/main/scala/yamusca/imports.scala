@@ -21,6 +21,8 @@ object imports {
   type Value = context.Value
   val Value = context.Value
 
+  type ValueConverter[A] = context.ValueConverter[A]
+
   object mustache {
     def expand(t: Template): Context => (Context, String) =
       yamusca.expand.render(t)_

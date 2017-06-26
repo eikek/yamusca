@@ -50,6 +50,15 @@ lazy val publishSettings = Seq(
   publishArtifact in Test := false
 )
 
+lazy val macros = project.in(file("modules/macros")).
+  settings(commonSettings).
+  settings(publishSettings).
+  settings(
+    name := "yamusca-macros",
+    incOptions := incOptions.value.withLogRecompileOnMacro(false),
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
+    ))
 
 lazy val core = (project in file("modules/core")).
   settings(commonSettings).
@@ -57,9 +66,10 @@ lazy val core = (project in file("modules/core")).
   settings(
     name := "yamusca-core",
     libraryDependencies ++= Seq(
-      scalatest
-    ).map(_ % "test"))
-
+      scalatest % "test",
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
+    )).
+  dependsOn(macros)
 
 lazy val benchmark = project.in(file("modules/benchmark")).
   enablePlugins(JmhPlugin).
@@ -78,6 +88,6 @@ lazy val benchmark = project.in(file("modules/benchmark")).
 
 lazy val root = project.in(file(".")).
   settings(commonSettings).
-  aggregate(core, benchmark)
+  aggregate(core, macros, benchmark)
 
 addCommandAlias("bench-parse-quick", ";project benchmark ;jmh:run -f1 -wi 2 -i 2 .*ParserBenchmark")

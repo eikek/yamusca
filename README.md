@@ -45,11 +45,88 @@ import yamusca.imports._
 val data = Context("name" -> Value.of("Eike"), "items" -> Value.fromSeq( List("one", "two").map(Value.of) ))
 //data: yamusca.context.Context = yamusca.context$Context$$anon$2@4c41848e
 
-val templ = mustache.parse("Hello {{name}}, see all {{#items}} - {{.}}, {{/items}}.")
-//templ: yamusca.parser.ParseResult = Right(Template(Vector(Literal(Hello ), Variable(name,false), Literal(, see all ), Section(items,Vector(Literal( - ), Variable(.,false), Literal(, )),false), Literal(.))))
+val templ = mustache.parse("Hello {{name}}, items: {{#items}} - {{.}}, {{/items}}.")
+//templ: yamusca.parser.ParseResult = Right(Template(Vector(Literal(Hello ), Variable(name,false), Literal(, items: ), Section(items,Vector(Literal( - ), Variable(.,false), Literal(, )),false), Literal(.))))
 
 mustache.render(templ.right.get)(data)
-//res0: String = Hello Eike, see all  - one,  - two, .
+//res0: String = Hello Eike, items:  - one,  - two, .
+```
+
+This is the basic usage, but involves creation of the `Context` value
+that is required to fill the template with data.
+
+Another way to create a `Context` is to use the `ValueConverter` type
+class. This is a function `A => Value` to convert an `A` into a `Value`
+form (which can finally be converted to a `Context`). Adding another
+import gets rid of some boilerplate for creating a `Context` object:
+
+``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
+import yamusca.imports._, yamusca.implicits._
+
+case class Data(name: String, items: List[String])
+
+implicit val dataConv: ValueConverter[Data] = deriveConverter[Data]
+//dataConv: yamusca.imports.ValueConverter[Data] = <function1>
+
+Data("Eike", List("one", "two")).unsafeRender("Hello {{name}}, items: {{#items}} - {{.}}, {{/items}}.")
+//res0: String = Hello Eike, items:  - one,  - two, .
+```
+
+The `deriveConverter` is a macro that creates a `ValueConverter`
+implementation for a case class. It requires that there are
+`ValueConverter` in scope for each member type. The import
+`yamusca.implicits._` pulls in `ValueConverter` for some standard types
+(`String`, `Int`, etc see
+[converter.scala](./modules/core/src/main/scala/yamusca/converter.scala))
+and it enriches all types that implement `ValueConverter` with three
+methods:
+
+-   `asMustacheValue` creates the `Value`
+-   `render(t: Template)` renders the given template using the current
+    value as `Context` which is derived by calling `asMustacheValue`
+-   `unsafeRender(template: String)` same as `render` but parses the
+    string first, throwing exceptions on parse errors
+
+Parsing and expanding
+---------------------
+
+In order to parse a string into a template, you can use `parse`:
+
+``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
+import yamusca.imports._
+import yamusca.parser.ParseInput
+
+val t: Either[(ParseInput, String), Template] = mustache.parse("hello {{name}}!")
+```
+
+which returns a `Either[(ParseInput, String), Template]`. If you parse
+constant templates you can use the `mustache` interpolator, which will
+throw exceptions on parsing errors:
+
+``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
+val t: Template = mustache"hello {{name}}!"
+```
+
+Once you have a template you can render it by supplying a `Context`
+object:
+
+``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
+import yamusca.imports._
+val t = mustache"hello {{name}}!"
+val res: String = mustache.render(t)(Context.empty)
+//res = "hello !"
+```
+
+The `Context` is defined as `String => (Context, Option[Value])`, so it
+may return a new `Context` with every value. You can use `expand` to get
+the final `Context` that has been threaded through the expansion
+process.
+
+``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
+import yamusca.imports._
+val t = mustache"hello {{name}}"
+val res: (yamusca.imports.Context, String) = mustache.expand(t)(Context.empty)
+// res =  (Context.empty,"hello ")
 ```
 
 Advanced Example
@@ -112,10 +189,10 @@ The interesting thing is in `Data` case class which implements the
 [Context](./src/main/scala/yamusca/context.scala) trait. The context
 passed to the template expansion is not a fixed data structure (like a
 `Map`) but a function `String =>
-(Context, Value)`. This allows to pass on the updated `Context` which is
-threaded through the expansion process. In this example, the checksum
-value is cached in the updated context. So the checksum is computed at
-most once, or not at all, if the template doesn't need it.
+(Context, Option[Value])`. This allows to pass on the updated `Context`
+which is threaded through the expansion process. In this example, the
+checksum value is cached in the updated context. So the checksum is
+computed at most once, or not at all, if the template doesn't need it.
 
 This can be useful if you already have this kind of immutable data
 structure, so it is easy to wrap it in the `Context` trait. Using

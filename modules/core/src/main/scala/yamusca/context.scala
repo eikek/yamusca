@@ -1,5 +1,6 @@
 package yamusca
 
+import java.util.Locale
 import yamusca.data.Section
 
 object context {
@@ -60,7 +61,7 @@ object context {
 
     def apply(ts: (String, Value)*): Context = fromMap(Map(ts: _*))
 
-    def apply(f: String => Option[Value]): Context = new Context {
+    def from(f: String => Option[Value]): Context = new Context {
       def find(key: String) = (this, f(key))
     }
   }
@@ -70,7 +71,7 @@ object context {
     def isEmpty: Boolean
     def asContext: Context = this match {
       case MapValue(v, _) => v
-      case _ => Context(key => if (key == ".") Some(this) else None)
+      case _ => Context.from(key => if (key == ".") Some(this) else None)
     }
   }
   object Value {
@@ -99,6 +100,23 @@ object context {
   case class MapValue(ctx: Context, isEmpty: Boolean) extends Value
   case class LambdaValue(f: Section => Find[String]) extends Value {
     val isEmpty = false
+  }
+
+  @annotation.implicitNotFound("There is no `ValueConverter' for this type in scope.")
+  type ValueConverter[A] = A => Value
+
+  object ValueConverter {
+    /** A `ValueConverter` that calls `toString` on the input value.*/
+    def toDefaultString[A]: ValueConverter[A] =
+      n => Value.fromString(n.toString)
+
+    /** A `ValueConverter` that calls `fmt.format(in)` using given locale. */
+    def toFormatString[A](locale: Locale, fmt: String): ValueConverter[A] =
+      n => Value.fromString(fmt.formatLocal(locale, n))
+
+    /** A `ValueConverter` that calls `fmt.format(in)` using `Locale.ROOT`. */
+    def toFormatString[A](fmt: String): ValueConverter[A] =
+      toFormatString(Locale.ROOT, fmt)
   }
 
 
