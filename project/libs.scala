@@ -16,6 +16,10 @@ object libs {
   val `circe-generic` = "io.circe" %% "circe-generic" % "0.8.0"
   val `circe-parser` = "io.circe" %% "circe-parser" % "0.8.0"
 
+  // https://github.com/scalate/scalate
+  // ASL 2.0
+  val `scalate-core` = "org.scalatra.scalate" %% "scalate-core" % "1.8.0"
+
   // https://github.com/rickynils/scalacheck
   // unmodified 3-clause BSD
   // val scalacheck = "org.scalacheck" %% "scalacheck" % "1.13.5"

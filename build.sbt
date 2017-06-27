@@ -71,7 +71,7 @@ lazy val benchmark = project.in(file("modules/benchmark")).
     publishSigned := (),
     publishArtifact := false,
     libraryDependencies ++= Seq(
-      `mustache-java`, `circe-parser`, `circe-generic`
+      `mustache-java`, `circe-parser`, `circe-generic`, `scalate-core`
     )
   ).
   dependsOn(core)

@@ -4,6 +4,7 @@ import java.io.{StringReader, StringWriter}
 import org.openjdk.jmh.annotations._
 import com.github.mustachejava._
 import io.circe._, io.circe.parser._
+import org.fusesource.scalate.mustache.MustacheParser
 import yamusca.imports._
 
 @State(Scope.Thread)
@@ -75,6 +76,11 @@ class RenderBenchmark {
     mustache.render(mustache.parse(template).right.get)(Context("tweets" -> Value.seq(v, v, v)))
   }
 
+  @Benchmark
+  def parseOnlyYamusca(): Unit = {
+    mustache.parse(template)
+  }
+
 
   @Benchmark
   def parseAndRenderJava(): Unit = {
@@ -82,6 +88,12 @@ class RenderBenchmark {
     val t = mf.compile(new StringReader(template), "template")
     val w = new StringWriter()
     t.execute(w, dataJava)
+  }
+
+  @Benchmark
+  def parseOnlyJava(): Unit = {
+    val mf = new DefaultMustacheFactory()
+    mf.compile(new StringReader(template), "template")
   }
 
   val yt = mustache.parse(template).right.get
@@ -101,6 +113,12 @@ class RenderBenchmark {
   def renderOnlyJava(): Unit = {
     val w = new StringWriter
     jt.execute(w, dataJava)
+  }
+
+  @Benchmark
+  def parseScalate(): Unit = {
+    val p = new MustacheParser()
+    p.parse(template)
   }
 
 }
