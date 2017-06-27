@@ -8,7 +8,12 @@ package object parser {
   type Parser[A] = ParseInput => ParseResult[A]
 
   final def parse(s: String): Either[(ParseInput, String), Template] = {
-    mustache.parseTemplate(ParseInput(s)).right.map(r => r._2)
+    mustache.parseTemplate(ParseInput(s)) match {
+      case Right((in, t)) =>
+        if (in.exhausted) Right(t)
+        else Left((in, s"Error in template near ${in.pos}: ${in.current}"))
+      case l@Left(_) => l.asInstanceOf[Either[(ParseInput, String), Template]]
+    }
   }
 
   implicit final class ParserOps[A](val p: Parser[A]) extends AnyVal {
