@@ -71,6 +71,18 @@ lazy val core = (project in file("modules/core")).
     )).
   dependsOn(macros)
 
+lazy val circe = project.in(file("modules/circe")).
+  settings(commonSettings).
+  settings(publishSettings).
+  settings(
+    name := "yamusca-circe",
+    description := "Provide value converter for circes json values",
+    libraryDependencies ++= Seq(
+      `circe-core`,
+      scalatest % "test", `circe-generic` % "test"
+    )).
+  dependsOn(core)
+
 lazy val benchmark = project.in(file("modules/benchmark")).
   enablePlugins(JmhPlugin).
   settings(commonSettings).
@@ -84,7 +96,7 @@ lazy val benchmark = project.in(file("modules/benchmark")).
       `mustache-java`, `circe-parser`, `circe-generic`, `scalate-core`
     )
   ).
-  dependsOn(core)
+  dependsOn(core, circe)
 
 lazy val root = project.in(file(".")).
   settings(commonSettings).
