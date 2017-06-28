@@ -43,7 +43,7 @@ trait Parsers {
   def consumeUntil(s: String): Parser[String] = { in =>
     in.splitAtNext(s) match {
       case Some((left, right)) => Right(right -> left.current)
-      case None => Left(in -> s"not found: $s")
+      case None => Left(in -> s"Expected string not found: $s")
     }
   }
 

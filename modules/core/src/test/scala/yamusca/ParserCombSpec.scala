@@ -194,6 +194,17 @@ class ParserCombSpec extends FlatSpec with Matchers {
     check("{{#test}}help{{/test}}", Section("test", Seq(Literal("help")), false))
   }
 
+  it should "fail on wrong input" in {
+    def check(in: String, msg: String): Unit =
+      parseElement(ParseInput(in)) match {
+        case Left((_, err)) => err should be (msg)
+        case Right((_, el)) => fail(s"Expected not to succeed: $in => $el")
+      }
+
+    check("{{#test}}ab", "Cannot find end section: test")
+    check("{{aaa", "Expected string not found: }}")
+  }
+
   "repeat" should "call literal parser just once" in {
     val flag = new AtomicBoolean(false)
     val p: Parser[Literal] = in => {
@@ -284,6 +295,13 @@ class ParserCombSpec extends FlatSpec with Matchers {
           Section("boolean", Seq(Literal("\n/\n")), false)
         )))
       })
+  }
 
+  "cut" should "restrict backtracking" in {
+    val p:Parser[String] =
+      (consume("a").cut ~ consume("1")).map(_ => "a1").
+        or((consume("b") ~ consume("2")).map(_ => "b2"))
+
+    p(ParseInput("a3")) should be (Left((ParseInput("a3").copy(pos=1,cutted=1) -> "Expected '1'")))
   }
 }

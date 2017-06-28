@@ -80,7 +80,7 @@ object mustache extends Parsers {
   }
 
   val parseComment: Parser[Comment] =
-    standaloneOr(parseTag(_ == '!')).map {
+    standaloneOr(parseTag(_ == '!').cut).map {
       case (_, _, msg) =>
         Comment(msg)
     }
@@ -94,7 +94,7 @@ object mustache extends Parsers {
     }
 
   val parseEndSection: Parser[String] =
-    standaloneOr(parseTag(_ == '/')).
+    standaloneOr(parseTag(_ == '/').cut).
       map({ case (_, _, name) => name.trim })
 
   def consumeUntilEndSection(name: String): Parser[ParseInput] = { in =>
@@ -121,12 +121,12 @@ object mustache extends Parsers {
 
     go(in) match {
       case Some((l, r)) => Right(r -> l)
-      case None => Left(in -> "Cannot find end section")
+      case None => Left(in -> s"Cannot find end section: $name")
     }
   }
 
   val parseSection: Parser[Section] =
-    parseStartSection.flatMap {
+    parseStartSection.cut.flatMap {
       case (inverse, name) =>
         consumeUntilEndSection(name).
           emap(in => parseTemplate(in).left.map(_._2).right.map(_._2)).

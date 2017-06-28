@@ -20,7 +20,7 @@ package object parser {
     def flatMap[B](f: A => Parser[B]): Parser[B] = { in =>
       p(in) match {
         case Right((next, a)) => f(a)(next)
-        case Left((next, err)) => Left((next, err))
+        case l@Left(_) => l.asInstanceOf[ParseResult[B]]
       }
     }
 
@@ -38,15 +38,26 @@ package object parser {
 
     def or[B >: A](other: Parser[B]): Parser[B] = { in =>
       p(in) match {
-        case Left(_) => other(in)
+        case l@Left((next, err)) =>
+          if (next.cutted <= in.pos) other(in)
+          else l.asInstanceOf[ParseResult[B]]
         case r@ Right(_) => r
       }
     }
 
     def opt: Parser[Option[A]] = { in =>
       p(in) match {
-        case Right((in, a)) => Right((in, Some(a)))
-        case Left((in, _)) => Right((in, None))
+        case Right((next, a)) => Right((next, Some(a)))
+        case Left(_) => Right((in, None))
+      }
+    }
+
+    def cut: Parser[A] = { in =>
+      p(in) match {
+        case Right((in,a)) =>
+          Right((in.cut, a))
+        case l@Left(_) =>
+          l.asInstanceOf[ParseResult[A]]
       }
     }
   }

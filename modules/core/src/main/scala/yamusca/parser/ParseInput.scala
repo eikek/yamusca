@@ -1,9 +1,12 @@
 package yamusca.parser
 
-final case class ParseInput(raw: String, pos: Int, end: Int, delim: Delim) {
+final case class ParseInput(raw: String, pos: Int, end: Int, delim: Delim, cutted: Int = 0) {
   def current: String =
     if (exhausted) ""
     else raw.substring(pos, end)
+
+  def cut: ParseInput =
+    copy(cutted = pos)
 
   def exhausted: Boolean = pos >= end
 
