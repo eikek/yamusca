@@ -102,19 +102,19 @@ object context {
     val isEmpty = false
   }
 
-  @annotation.implicitNotFound("There is no `ValueConverter' for this type in scope.")
+  @annotation.implicitNotFound("There is no ValueConverter for type `${A}' in scope.")
   type ValueConverter[A] = A => Value
 
   object ValueConverter {
     /** A `ValueConverter` that calls `toString` on the input value.*/
     def toDefaultString[A]: ValueConverter[A] =
-      n => Value.fromString(n.toString)
+      a => Value.fromString(a.toString)
 
-    /** A `ValueConverter` that calls `fmt.format(in)` using given locale. */
+    /** A `ValueConverter` that calls `fmt.format(a)` using given locale. */
     def toFormatString[A](locale: Locale, fmt: String): ValueConverter[A] =
-      n => Value.fromString(fmt.formatLocal(locale, n))
+      a => Value.fromString(fmt.formatLocal(locale, a))
 
-    /** A `ValueConverter` that calls `fmt.format(in)` using `Locale.ROOT`. */
+    /** A `ValueConverter` that calls `fmt.format(a)` using `Locale.ROOT`. */
     def toFormatString[A](fmt: String): ValueConverter[A] =
       toFormatString(Locale.ROOT, fmt)
   }
