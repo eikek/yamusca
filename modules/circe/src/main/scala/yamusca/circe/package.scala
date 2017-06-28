@@ -4,24 +4,25 @@ import io.circe._
 import yamusca.context.{Context, Value, ValueConverter}
 
 package object circe {
+
+  implicit def circeJsonNumberValueConverter(implicit
+    vl: ValueConverter[Long],
+    vd: ValueConverter[Double]): ValueConverter[JsonNumber] =
+    n => n.toLong.map(vl).getOrElse(vd(n.toDouble))
+
+  implicit def circeJsonObjectValueConverter(implicit v: ValueConverter[Json]): ValueConverter[JsonObject] =
+    obj => Value.fromContext(Context.from(name => obj(name).map(v)), obj.isEmpty)
+
   implicit def circeJsonValueConverter(implicit
     vb: ValueConverter[Boolean],
-    vl: ValueConverter[Long],
-    vd: ValueConverter[Double],
+    vnum: ValueConverter[JsonNumber],
     vs: ValueConverter[String]): ValueConverter[Json] =
     _.fold(
       Value.fromContext(Context.empty, true),
       b => vb(b),
-      n => n.toLong.map(vl).getOrElse(vd(n.toDouble)),
+      n => vnum(n),
       s => vs(s),
-      vseq => jsonSeqValue(vseq),
-      obj => jsonObjectValue(obj)
+      vseq => converter.seqValueConverter(circeJsonValueConverter)(vseq),
+      obj => circeJsonObjectValueConverter(circeJsonValueConverter)(obj)
     )
-
-  def jsonSeqValue(seq: Seq[Json])(implicit v: ValueConverter[Json]): Value = {
-    converter.seqValueConverter(v)(seq)
-  }
-
-  def jsonObjectValue(obj: JsonObject)(implicit v: ValueConverter[Json]): Value =
-    Value.fromContext(Context.from(name => obj(name).map(v)), obj.isEmpty)
 }

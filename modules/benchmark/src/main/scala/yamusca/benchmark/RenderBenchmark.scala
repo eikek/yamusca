@@ -6,12 +6,25 @@ import com.github.mustachejava._
 import io.circe._, io.circe.parser._
 import org.fusesource.scalate.mustache.MustacheParser
 import yamusca.imports._
+import yamusca.circe._
+import yamusca.implicits._
 
 @State(Scope.Thread)
 class RenderBenchmark {
 
-  val data = parse(dataJson).right.get.asObject.get
+  var data: JsonObject = _
+  var yt: Template = _
+  var jt: Mustache = _
 
+  @Setup
+  def setup(): Unit = {
+    data = parse(dataJson).right.get.asObject.get
+    yt = mustache.parse(template).right.get
+    jt = {
+      val mf = new DefaultMustacheFactory()
+      mf.compile(new StringReader(template), "template")
+    }
+  }
 
   def arrToJava(ja: Vector[Json]): java.util.List[Any] = {
     val l = new java.util.ArrayList[Any]
@@ -41,7 +54,6 @@ class RenderBenchmark {
         obj => m.put(name, objToJava(obj)))
       }
     }
-
     m
   }
 
@@ -52,27 +64,10 @@ class RenderBenchmark {
     ctx
   }
 
-  case class JsonData(json: JsonObject) extends Context {
-    def find(key: String): (Context, Option[Value]) = {
-      json(key) match {
-        case Some(js) => (this, Some(jsonToValue(js)))
-        case None => (this, None)
-      }
-    }
-
-    def jsonToValue(js: Json): Value = js.fold(
-      Value.of(false),
-      b => Value.of(b),
-      n => Value.of(n.toLong.getOrElse(n.toDouble)+ ""),
-      s => Value.of(s),
-      vs => Value.fromSeq(vs.map(jsonToValue)),
-      obj => Value.fromContext(JsonData(obj), obj.isEmpty)
-    )
-  }
 
   @Benchmark
   def parseAndRenderYamusca(): Unit = {
-    val v = Value.fromContext(JsonData(data), data.isEmpty)
+    val v = data.asMustacheValue
     mustache.render(mustache.parse(template).right.get)(Context("tweets" -> Value.seq(v, v, v)))
   }
 
@@ -96,17 +91,10 @@ class RenderBenchmark {
     mf.compile(new StringReader(template), "template")
   }
 
-  val yt = mustache.parse(template).right.get
-
   @Benchmark
   def renderOnlyYamusca(): Unit = {
-    val v = Value.fromContext(JsonData(data), data.isEmpty)
+    val v = data.asMustacheValue
     mustache.render(yt)(Context("tweets" -> Value.seq(v,v,v)))
-  }
-
-  val jt = {
-    val mf = new DefaultMustacheFactory()
-    mf.compile(new StringReader(template), "template")
   }
 
   @Benchmark
