@@ -21,7 +21,8 @@ object imports {
   type Value = context.Value
   val Value = context.Value
 
-  type ValueConverter[A] = context.ValueConverter[A]
+  type ValueConverter[A] = converter.ValueConverter[A]
+  val ValueConverter = converter.ValueConverter
 
   object mustache {
     def expand(t: Template): Context => (Context, String) =

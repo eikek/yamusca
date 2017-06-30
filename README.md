@@ -65,7 +65,7 @@ import yamusca.imports._, yamusca.implicits._
 
 case class Data(name: String, items: List[String])
 
-implicit val dataConv: ValueConverter[Data] = deriveConverter[Data]
+implicit val dataConv: ValueConverter[Data] = ValueConverter.deriveConverter[Data]
 //dataConv: yamusca.imports.ValueConverter[Data] = <function1>
 
 Data("Eike", List("one", "two")).unsafeRender("Hello {{name}}, items: {{#items}} - {{.}}, {{/items}}.")

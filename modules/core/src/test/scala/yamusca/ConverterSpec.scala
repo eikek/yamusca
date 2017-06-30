@@ -35,8 +35,8 @@ class ConverterSpec extends FlatSpec with Matchers {
     numbers: Numbers = Numbers()
   )
 
-  implicit val nconv: ValueConverter[Numbers] = deriveConverter[Numbers]
-  implicit val mconv: ValueConverter[ManyValues] = deriveConverter[ManyValues]
+  implicit val nconv: ValueConverter[Numbers] = ValueConverter.deriveConverter[Numbers]
+  implicit val mconv: ValueConverter[ManyValues] = ValueConverter.deriveConverter[ManyValues]
 
   "converter" should "be available for some types" in {
     ManyValues().unsafeRender(
