@@ -100,6 +100,12 @@ lazy val benchmark = project.in(file("modules/benchmark")).
 
 lazy val root = project.in(file(".")).
   settings(commonSettings).
-  aggregate(core, macros, benchmark)
+  settings(
+    publish := (),
+    publishLocal := (),
+    publishSigned := (),
+    publishArtifact := false
+  ).
+  aggregate(core, macros, circe, benchmark)
 
 addCommandAlias("bench-parse-quick", ";project benchmark ;jmh:run -f1 -wi 2 -i 2 .*ParserBenchmark")

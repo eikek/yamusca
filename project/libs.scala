@@ -8,7 +8,7 @@ object libs {
   // ASL 2.0
   val scalatest = "org.scalatest" %% "scalatest" % "3.0.3"
 
-  val `mustache-java` = "com.github.spullara.mustache.java" % "compiler" % "0.8.18"
+  val `mustache-java` = "com.github.spullara.mustache.java" % "compiler" % "0.9.5"
 
   // https://github.com/circe/circe
   // ASL 2.0
