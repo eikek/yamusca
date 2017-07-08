@@ -30,7 +30,7 @@ Using [sbt](http://scala-sbt.org):
 
 ``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
 libraryDependencies ++= Seq(
-  "com.github.eikek" %% "yamusca" % "0.3.0"
+  "com.github.eikek" %% "yamusca-core" % "0.4.0"
 )
 ```
 
