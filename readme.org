@@ -31,6 +31,7 @@ Yet another mustache parser/renderer for scala.
 - triple mustache (~{{{~)
 - dotted access (~{{a.b.c}}~)
 - custom delimiters (~{{= … =}}~)
+- special variables ~{{-first}}~, ~{{-last}}~ and ~{{-index}}~
 
 *** Not supported
 
@@ -56,11 +57,11 @@ import yamusca.imports._
 val data = Context("name" -> Value.of("Eike"), "items" -> Value.fromSeq( List("one", "two").map(Value.of) ))
 //data: yamusca.context.Context = yamusca.context$Context$$anon$2@4c41848e
 
-val templ = mustache.parse("Hello {{name}}, items: {{#items}} - {{.}}, {{/items}}.")
-//templ: yamusca.parser.ParseResult = Right(Template(Vector(Literal(Hello ), Variable(name,false), Literal(, items: ), Section(items,Vector(Literal( - ), Variable(.,false), Literal(, )),false), Literal(.))))
+val templ = mustache.parse("Hello {{name}}, items: {{#items}} - {{.}}{{^-last}}, {{/-last}}{{/items}}.")
+//templ: Either[(yamusca.parser.ParseInput, String),yamusca.data.Template] = Right(Template(Vector(Literal(Hello ), Variable(name,false), Literal(, items: ), Section(items,Vector(Literal( - ), Variable(.,false), Section(-last,Vector(Literal(, )),true)),false), Literal(.))))
 
 mustache.render(templ.right.get)(data)
-//res0: String = Hello Eike, items:  - one,  - two, .
+//res0: String = Hello Eike, items:  - one,  - two.
 #+end_src
 
 This is the basic usage, but involves creation of the ~Context~ value

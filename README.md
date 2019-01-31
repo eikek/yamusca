@@ -1,4 +1,4 @@
-yamusca
+yamusca {#yamusca-1}
 =======
 
 <a href="https://travis-ci.org/eikek/yamusca"><img src="https://travis-ci.org/eikek/yamusca.svg"></a>
@@ -18,6 +18,7 @@ Goals
 -   triple mustache (`{{{`)
 -   dotted access (`{{a.b.c}}`)
 -   custom delimiters (`{{= … =}}`)
+-   special variables `{{-first}}`, `{{-last}}` and `{{-index}}`
 
 ### Not supported
 
@@ -28,7 +29,7 @@ Using
 
 Using [sbt](http://scala-sbt.org):
 
-``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
+``` {.scala exports="both"}
 libraryDependencies ++= Seq(
   "com.github.eikek" %% "yamusca-core" % "0.4.0"
 )
@@ -39,17 +40,17 @@ It is available for Scala 2.11 and 2.12.
 Simple Example
 --------------
 
-``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
+``` {.scala exports="both"}
 import yamusca.imports._
 
 val data = Context("name" -> Value.of("Eike"), "items" -> Value.fromSeq( List("one", "two").map(Value.of) ))
 //data: yamusca.context.Context = yamusca.context$Context$$anon$2@4c41848e
 
-val templ = mustache.parse("Hello {{name}}, items: {{#items}} - {{.}}, {{/items}}.")
-//templ: yamusca.parser.ParseResult = Right(Template(Vector(Literal(Hello ), Variable(name,false), Literal(, items: ), Section(items,Vector(Literal( - ), Variable(.,false), Literal(, )),false), Literal(.))))
+val templ = mustache.parse("Hello {{name}}, items: {{#items}} - {{.}}{{^-last}}, {{/-last}}{{/items}}.")
+//templ: Either[(yamusca.parser.ParseInput, String),yamusca.data.Template] = Right(Template(Vector(Literal(Hello ), Variable(name,false), Literal(, items: ), Section(items,Vector(Literal( - ), Variable(.,false), Section(-last,Vector(Literal(, )),true)),false), Literal(.))))
 
 mustache.render(templ.right.get)(data)
-//res0: String = Hello Eike, items:  - one,  - two, .
+//res0: String = Hello Eike, items:  - one,  - two.
 ```
 
 This is the basic usage, but involves creation of the `Context` value
@@ -60,7 +61,7 @@ class. This is a function `A => Value` to convert an `A` into a `Value`
 form (which can finally be converted to a `Context`). Adding another
 import gets rid of some boilerplate for creating a `Context` object:
 
-``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
+``` {.scala exports="both"}
 import yamusca.imports._, yamusca.implicits._
 
 case class Data(name: String, items: List[String])
@@ -92,7 +93,7 @@ Parsing and expanding
 
 In order to parse a string into a template, you can use `parse`:
 
-``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
+``` {.scala exports="both"}
 import yamusca.imports._
 import yamusca.parser.ParseInput
 
@@ -103,14 +104,14 @@ which returns a `Either[(ParseInput, String), Template]`. If you parse
 constant templates you can use the `mustache` interpolator, which will
 throw exceptions on parsing errors:
 
-``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
+``` {.scala exports="both"}
 val t: Template = mustache"hello {{name}}!"
 ```
 
 Once you have a template you can render it by supplying a `Context`
 object:
 
-``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
+``` {.scala exports="both"}
 import yamusca.imports._
 val t = mustache"hello {{name}}!"
 val res: String = mustache.render(t)(Context.empty)
@@ -122,7 +123,7 @@ may return a new `Context` with every value. You can use `expand` to get
 the final `Context` that has been threaded through the expansion
 process.
 
-``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
+``` {.scala exports="both"}
 import yamusca.imports._
 val t = mustache"hello {{name}}"
 val res: (yamusca.imports.Context, String) = mustache.expand(t)(Context.empty)
@@ -135,7 +136,7 @@ Advanced Example
 The following is an [Ammonite](http://www.lihaoyi.com/Ammonite/) script
 showing a (contrived) example:
 
-``` {.scala .rundoc-block rundoc-language="scala" rundoc-exports="both"}
+``` {.scala exports="both"}
 import $ivy.`com.github.eikek::yamusca:0.2.0`
 import ammonite.ops._
 import java.nio.file.Files
@@ -192,7 +193,7 @@ passed to the template expansion is not a fixed data structure (like a
 (Context, Option[Value])`. This allows to pass on the updated `Context`
 which is threaded through the expansion process. In this example, the
 checksum value is cached in the updated context. So the checksum is
-computed at most once, or not at all, if the template doesn't need it.
+computed at most once, or not at all, if the template doesn\'t need it.
 
 This can be useful if you already have this kind of immutable data
 structure, so it is easy to wrap it in the `Context` trait. Using

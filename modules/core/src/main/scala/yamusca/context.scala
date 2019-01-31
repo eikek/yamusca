@@ -63,6 +63,13 @@ object context {
     def from(f: String => Option[Value]): Context = new Context {
       def find(key: String) = (this, f(key))
     }
+
+    def indexContext(index: Int, length: Int): Context =
+      Context(
+        "-first" -> Value.of(index == 0),
+        "-last"  -> Value.of(index == length -1),
+        "-index" -> Value.of((1 + index) + "")
+      )
   }
 
 
