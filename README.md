@@ -1,4 +1,4 @@
-yamusca {#yamusca-1}
+yamusca
 =======
 
 <a href="https://travis-ci.org/eikek/yamusca"><img src="https://travis-ci.org/eikek/yamusca.svg"></a>
@@ -31,7 +31,7 @@ Using [sbt](http://scala-sbt.org):
 
 ``` {.scala exports="both"}
 libraryDependencies ++= Seq(
-  "com.github.eikek" %% "yamusca-core" % "0.4.0"
+  "com.github.eikek" %% "yamusca-core" % "0.5.0"
 )
 ```
 
