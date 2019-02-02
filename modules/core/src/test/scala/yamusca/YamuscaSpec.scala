@@ -472,4 +472,21 @@ class YamuscaSpec extends FlatSpec with Matchers {
       Context("section" -> Value.of(true), "data" -> Value.of("I got interpolated."))
     )
   }
+
+  it should "render special variables -first, -last and -index" in {
+    expectResult(
+      "{{#things}}{{^-first}}, {{/-first}}{{.}}{{/things}}",
+      "1, 2, 3",
+      Context("things" -> Value.fromSeq(List("1","2","3").map(Value.of))))
+
+    expectResult(
+      "{{#things}}{{.}}{{^-last}}, {{/-last}}{{/things}}",
+      "1, 2, 3",
+      Context("things" -> Value.fromSeq(List("1","2","3").map(Value.of))))
+
+    expectResult(
+      "{{#things}}{{-index}}. {{.}}\n{{/things}}",
+      "1. one\n2. two\n3. three\n",
+      Context("things" -> Value.fromSeq(List("one","two","three").map(Value.of))))
+  }
 }

@@ -88,9 +88,6 @@ lazy val benchmark = project.in(file("modules/benchmark")).
   settings(commonSettings).
   settings(
     name := "yamusca-benchmark",
-    publish := (),
-    publishLocal := (),
-    publishSigned := (),
     publishArtifact := false,
     libraryDependencies ++= Seq(
       `mustache-java`, `circe-parser`, `circe-generic`, `scalate-core`
@@ -101,9 +98,6 @@ lazy val benchmark = project.in(file("modules/benchmark")).
 lazy val root = project.in(file(".")).
   settings(commonSettings).
   settings(
-    publish := (),
-    publishLocal := (),
-    publishSigned := (),
     publishArtifact := false
   ).
   aggregate(core, macros, circe, benchmark)

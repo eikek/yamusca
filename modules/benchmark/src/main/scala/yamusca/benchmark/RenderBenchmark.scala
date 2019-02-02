@@ -44,7 +44,7 @@ class RenderBenchmark {
 
   def objToJava(jo: JsonObject): java.util.Map[String, Any] = {
     val m = new java.util.HashMap[String, Any]()
-    jo.fields.foreach { name =>
+    jo.keys.foreach { name =>
       jo(name).foreach { _.fold(
         (),
         b => m.put(name, b+ ""),
