@@ -91,14 +91,16 @@ lazy val benchmark = project.in(file("modules/benchmark")).
     publishArtifact := false,
     libraryDependencies ++= Seq(
       `mustache-java`, `circe-parser`, `circe-generic`, `scalate-core`
-    )
+    ),
+    skip in publish := true
   ).
   dependsOn(core, circe)
 
 lazy val root = project.in(file(".")).
   settings(commonSettings).
   settings(
-    publishArtifact := false
+    publishArtifact := false,
+    skip in publish := true
   ).
   aggregate(core, macros, circe, benchmark)
 
