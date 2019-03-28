@@ -100,7 +100,7 @@ object mustache extends Parsers {
   def consumeUntilEndSection(name: String): Parser[ParseInput] = { in =>
     val delim = in.delim.start + "/"
     val stop: ParseInput => Boolean = in => {
-      (ignoreWs ~ consume(name))(in).isRight
+      (ignoreWs ~ consume(name) ~ ignoreWs ~ consume(in.delim.end))(in).isRight
     }
     @annotation.tailrec
     def go(pin: ParseInput): Option[(ParseInput, ParseInput)] =

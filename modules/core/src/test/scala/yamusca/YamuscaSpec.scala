@@ -29,6 +29,24 @@ class YamuscaSpec extends FlatSpec with Matchers {
     t.renderResult(Context.empty) should be ("Hello world!")
   }
 
+  it should "render nested same sections" in {
+    expectResult(
+      "{{#a.b}}Hello {{#d.e}}world{{/d.e}}{{/a.b}}",
+      "Hello world",
+      Context("a" -> Value.map("b" -> Value.fromBoolean(true)), "d" -> Value.map("e" -> Value.fromBoolean(true)))
+    )
+    expectResult(
+      "{{#a.b}}Hello {{#c}}world{{/c}}{{/a.b}}",
+      "Hello world",
+      Context("a" -> Value.map("b" -> Value.map("c" -> Value.fromBoolean(true))))
+    )
+    expectResult(
+      "{{#a.b}}Hello {{#a.b.c}}world{{/a.b.c}}{{/a.b}}",
+      "Hello world",
+      Context("a" -> Value.map("b" -> Value.map("c" -> Value.fromBoolean(true))))
+    )
+  }
+
   it should "replace variables" in {
     val t = Template(Literal("Hello "), Variable("name"), Literal("!"))
     val context = Context("name" -> Value.of("Harry"))
