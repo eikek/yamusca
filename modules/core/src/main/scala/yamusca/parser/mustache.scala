@@ -129,7 +129,7 @@ object mustache extends Parsers {
     parseStartSection.cut.flatMap {
       case (inverse, name) =>
         consumeUntilEndSection(name).
-          emap(in => parseTemplate(in).left.map(_._2).right.map(_._2)).
+          emap(in => parseTemplate(in).left.map(_._2).map(_._2)).
           map(t => Section(name, t.els, inverse))
     }
 

@@ -1,28 +1,37 @@
 import com.typesafe.sbt.pgp.PgpKeys.publishSigned
 import libs._
 
+val scalacOpts: Seq[String] = Seq(
+  "-encoding", "UTF-8",
+  "-Xfatal-warnings",
+  "-deprecation",
+  "-feature",
+  "-unchecked",
+  "-language:higherKinds",
+  "-Xlint",
+  "-Yno-adapted-args",
+  "-Ywarn-dead-code",
+  "-Ywarn-numeric-widen",
+  "-Ywarn-unused-import"
+)
+
 lazy val commonSettings = Seq(
   name := "yamusca",
   organization := "com.github.eikek",
   licenses := Seq("MIT" -> url("http://spdx.org/licenses/MIT")),
   homepage := Some(url("https://github.com/eikek")),
   scalaVersion := `scala-version`,
-  crossScalaVersions := Seq("2.11.11", `scala-version`),
-  scalacOptions ++= Seq(
-    "-encoding", "UTF-8",
-    "-Xfatal-warnings", // fail when there are warnings
-    "-deprecation",
-    "-feature",
-    "-unchecked",
-    "-Xlint",
-    "-Yno-adapted-args",
-    "-Ywarn-dead-code",
-    "-Ywarn-numeric-widen",
-    "-Ywarn-unused-import"
-  ),
+  crossScalaVersions := Seq("2.12.8", `scala-version`),
+  scalacOptions := {
+    if (scalaBinaryVersion.value.startsWith("2.13")) {
+      scalacOpts.filter(o => o != "-Yno-adapted-args" && o != "-Ywarn-unused-import")
+    } else {
+      scalacOpts
+    }
+  },
   scalacOptions in (Compile, console) ~= (_ filterNot (Set("-Xfatal-warnings", "-Ywarn-unused-import").contains)),
   scalacOptions in (Test, console) := (scalacOptions in (Compile, console)).value
-)
+) ++ publishSettings
 
 lazy val publishSettings = Seq(
   publishMavenStyle := true,
@@ -47,7 +56,14 @@ lazy val publishSettings = Seq(
     else
       Some("releases"  at nexus + "service/local/staging/deploy/maven2")
   },
-  publishArtifact in Test := false
+  publishArtifact in Test := false,
+  releaseCrossBuild := true
+)
+
+lazy val noPublish = Seq(
+  publish := {},
+  publishLocal := {},
+  publishArtifact := false
 )
 
 lazy val macros = project.in(file("modules/macros")).
@@ -86,22 +102,18 @@ lazy val circe = project.in(file("modules/circe")).
 lazy val benchmark = project.in(file("modules/benchmark")).
   enablePlugins(JmhPlugin).
   settings(commonSettings).
+  settings(noPublish).
   settings(
     name := "yamusca-benchmark",
-    publishArtifact := false,
     libraryDependencies ++= Seq(
       `mustache-java`, `circe-parser`, `circe-generic`, `scalate-core`
-    ),
-    skip in publish := true
+    )
   ).
   dependsOn(core, circe)
 
 lazy val root = project.in(file(".")).
   settings(commonSettings).
-  settings(
-    publishArtifact := false,
-    skip in publish := true
-  ).
+  settings(noPublish).
   aggregate(core, macros, circe, benchmark)
 
 addCommandAlias("bench-parse-quick", ";project benchmark ;jmh:run -f1 -wi 2 -i 2 .*ParserBenchmark")

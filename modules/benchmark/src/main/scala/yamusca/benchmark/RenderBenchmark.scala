@@ -18,8 +18,8 @@ class RenderBenchmark {
 
   @Setup
   def setup(): Unit = {
-    data = parse(dataJson).right.get.asObject.get
-    yt = mustache.parse(template).right.get
+    data = parse(dataJson).toOption.get.asObject.get
+    yt = mustache.parse(template).toOption.get
     jt = {
       val mf = new DefaultMustacheFactory()
       mf.compile(new StringReader(template), "template")
@@ -31,8 +31,8 @@ class RenderBenchmark {
     ja.foreach(j => {
       j.fold[Unit](
         (),
-        b => l.add(b+""),
-        n => l.add(n.toLong.getOrElse(n.toDouble)+""),
+        b => l.add(s"$b"),
+        n => l.add(s"${n.toLong.getOrElse(n.toDouble)}"),
         s => l.add(s),
         vs => l.add(arrToJava(vs)),
         obj => l.add(objToJava(obj)))
@@ -47,8 +47,8 @@ class RenderBenchmark {
     jo.keys.foreach { name =>
       jo(name).foreach { _.fold(
         (),
-        b => m.put(name, b+ ""),
-        n => m.put(name, n.toLong.getOrElse(n.toDouble)+ ""),
+        b => m.put(name, s"$b"),
+        n => m.put(name, s"${n.toLong.getOrElse(n.toDouble)}"),
         s => m.put(name, s),
         vs => m.put(name, arrToJava(vs)),
         obj => m.put(name, objToJava(obj)))
@@ -68,7 +68,7 @@ class RenderBenchmark {
   @Benchmark
   def parseAndRenderYamusca(): Unit = {
     val v = data.asMustacheValue
-    mustache.render(mustache.parse(template).right.get)(Context("tweets" -> Value.seq(v, v, v)))
+    mustache.render(mustache.parse(template).toOption.get)(Context("tweets" -> Value.seq(v, v, v)))
   }
 
   @Benchmark

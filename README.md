@@ -1,4 +1,4 @@
-yamusca {#yamusca-1}
+yamusca
 =======
 
 <a href="https://travis-ci.org/eikek/yamusca"><img src="https://travis-ci.org/eikek/yamusca.svg"></a>
@@ -35,7 +35,7 @@ libraryDependencies ++= Seq(
 )
 ```
 
-It is available for Scala 2.11 and 2.12.
+It is available for Scala 2.12 and 2.13.
 
 Simple Example
 --------------

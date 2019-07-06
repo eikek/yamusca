@@ -19,7 +19,10 @@ class YamuscaSpec extends FlatSpec with Matchers {
 
   "stackedcontext" should "replace correct positions" in {
     val sc = Context("name" -> Value.of("red")) :: Context("name" -> Value.of("blue")) :: Context.empty
-    val (c2, Some(v)) = sc.find("name")
+    val (c2, Some(v)) = sc.find("name") match {
+      case (a, Some(b)) => (a, Some(b))
+      case _ => sys.error("unexpected")
+    }
     v should be (Value.of("red"))
     c2 should be (sc)
   }
@@ -175,7 +178,7 @@ class YamuscaSpec extends FlatSpec with Matchers {
     val data = Context("boolean" -> Value.of(true))
     val template = "#{{#boolean}}\n/\n  {{/boolean}}"
     info(s"template: ${template.visible}  expected: ${"#\n/".visible}")
-    val t = mustache.parse(template).right.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be ("#\n/\n".visible)
   }
 
@@ -185,7 +188,7 @@ class YamuscaSpec extends FlatSpec with Matchers {
 #{{/boolean}}
 /"""
     info(s"template: ${template.visible}  expected: ${"#\n/".visible}")
-    val t = mustache.parse(template).right.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be ("#\n/".visible)
   }
 
@@ -202,7 +205,7 @@ class YamuscaSpec extends FlatSpec with Matchers {
 | This Is
 |
 | A Line"""
-    val t = mustache.parse(template).right.get
+    val t = mustache.parse(template).toOption.get
     info(s"template: ${template.visible}  expected: ${expected.visible}")
     mustache.render(t)(data).visible should be (expected.visible)
   }
@@ -220,7 +223,7 @@ class YamuscaSpec extends FlatSpec with Matchers {
 | This Is
 |
 | A Line"""
-    val t = mustache.parse(template).right.get
+    val t = mustache.parse(template).toOption.get
     info(s"template: ${template.visible}  expected: ${expected.visible}")
     mustache.render(t)(data).visible should be (expected.visible)
   }
@@ -241,7 +244,7 @@ class YamuscaSpec extends FlatSpec with Matchers {
 * third
 """
 
-    val t = mustache.parse(template).right.get
+    val t = mustache.parse(template).toOption.get
     info(s"template: ${template.visible}  expected: ${expected.visible}")
     mustache.render(t)(data).visible should be (expected.visible)
   }
@@ -250,7 +253,7 @@ class YamuscaSpec extends FlatSpec with Matchers {
     val data = Context("boolean" -> Value.of(true))
     val template = " {{#boolean}}YES{{/boolean}}\n {{#boolean}}GOOD{{/boolean}}\n"
     val expected = " YES\n GOOD\n"
-    val t = mustache.parse(template).right.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be (expected.visible)
   }
 
@@ -295,7 +298,7 @@ class YamuscaSpec extends FlatSpec with Matchers {
       |1
       |""".stripMargin
 
-    val t = mustache.parse(template).right.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be (expected.visible)
   }
 
@@ -303,7 +306,7 @@ class YamuscaSpec extends FlatSpec with Matchers {
     val data = Context("boolean" -> Value.of(false))
     val template = "'{{^boolean}}This should be rendered.{{/boolean}}'"
     val expected = "'This should be rendered.'"
-    val t = mustache.parse(template).right.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be (expected.visible)
   }
 
@@ -311,7 +314,7 @@ class YamuscaSpec extends FlatSpec with Matchers {
     val data = Context("boolean" -> Value.of(true))
     val template = "'{{^boolean}}This should not be rendered.{{/boolean}}'"
     val expected = "''"
-    val t = mustache.parse(template).right.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be (expected.visible)
   }
 
@@ -319,7 +322,7 @@ class YamuscaSpec extends FlatSpec with Matchers {
     val data = Context("context" -> Value.map("name" -> Value.of("Joe")))
     val template = "'{{^context}}Hi {{name}}.{{/context}}'"
     val expected = "''"
-    val t = mustache.parse(template).right.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be (expected.visible)
   }
 
@@ -340,7 +343,7 @@ class YamuscaSpec extends FlatSpec with Matchers {
       |* third
       |""".stripMargin
 
-    val t = mustache.parse(template).right.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be (expected.visible)
   }
 
@@ -348,7 +351,7 @@ class YamuscaSpec extends FlatSpec with Matchers {
     val data = Context("list" -> Value.fromSeq(List("a","b","c","d","e").map(Value.of)))
     val template =  "'{{#list}}({{.}}){{/list}}'"
     val expected = "'(a)(b)(c)(d)(e)'"
-    val t = mustache.parse(template).right.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be (expected.visible)
   }
 
@@ -357,7 +360,7 @@ class YamuscaSpec extends FlatSpec with Matchers {
     val template = "|\r\n{{#boolean}}\r\ntest\r\n{{/boolean}}\r\n|"
     val expected =  "|\r\ntest\r\n|"
 
-    val t = mustache.parse(template).right.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be (expected.visible)
   }
 
@@ -369,14 +372,14 @@ class YamuscaSpec extends FlatSpec with Matchers {
       ))
     val template = "'{{#list}}({{#.}}{{.}}{{/.}}){{/list}}'"
     val expected = "'(123)(abc)'"
-    val t = mustache.parse(template).right.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be (expected.visible)
   }
 
   "comment" should "be removed" in {
     val template = "123{{! this is a comment }}456"
     val expected = "123456"
-    val t = mustache.parse(template).right.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(Context.empty) should be (expected)
   }
 

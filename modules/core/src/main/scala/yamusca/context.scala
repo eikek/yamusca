@@ -68,7 +68,7 @@ object context {
       Context(
         "-first" -> Value.of(index == 0),
         "-last"  -> Value.of(index == length -1),
-        "-index" -> Value.of((1 + index) + "")
+        "-index" -> Value.of(s"${1 + index}")
       )
   }
 
