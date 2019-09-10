@@ -1,5 +1,7 @@
 import com.typesafe.sbt.pgp.PgpKeys.publishSigned
 import libs._
+import xerial.sbt.Sonatype._
+import ReleaseTransformations._
 
 val scalacOpts: Seq[String] = Seq(
   "-encoding", "UTF-8",
@@ -49,16 +51,25 @@ lazy val publishSettings = Seq(
       email = ""
     )
   ),
-  publishTo := {
-    val nexus = "https://oss.sonatype.org/"
-    if (isSnapshot.value)
-      Some("snapshots" at nexus + "content/repositories/snapshots")
-    else
-      Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-  },
+  publishTo := sonatypePublishToBundle.value,
   publishArtifact in Test := false,
   releaseCrossBuild := true,
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value
+  releaseProcess := Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    inquireVersions,
+    runClean,
+    runTest,
+    setReleaseVersion,
+    commitReleaseVersion,
+    tagRelease,
+    // For non cross-build projects, use releaseStepCommand("publishSigned")
+    releaseStepCommandAndRemaining("+publishSigned"),
+    releaseStepCommand("sonatypeBundleRelease"),
+    setNextVersion,
+    commitNextVersion,
+    pushChanges
+  ),
+  sonatypeProjectHosting := Some(GitHubHosting("eikek", "yamusca", "eike.kettner@posteo.de"))
 )
 
 lazy val noPublish = Seq(

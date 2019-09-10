@@ -12,9 +12,9 @@ object libs {
 
   // https://github.com/circe/circe
   // ASL 2.0
-  val `circe-core` = "io.circe" %% "circe-core" % "0.12.0-M4"
-  val `circe-generic` = "io.circe" %% "circe-generic" % "0.12.0-M4"
-  val `circe-parser` = "io.circe" %% "circe-parser" % "0.12.0-M4"
+  val `circe-core` = "io.circe" %% "circe-core" % "0.12.1"
+  val `circe-generic` = "io.circe" %% "circe-generic" % "0.12.1"
+  val `circe-parser` = "io.circe" %% "circe-parser" % "0.12.1"
 
   // https://github.com/scalate/scalate
   // ASL 2.0
