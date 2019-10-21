@@ -66,9 +66,9 @@ object mustache extends Parsers {
         case Some((left, right)) =>
           right.standaloneStart match {
             case Some(idx) if stag(right).isRight =>
-              Right((right, left.copy(end = idx+1).current))
+              Right((right.copy(end = in.end), left.copy(end = idx+1).current))
             case _ =>
-              Right((right, left.current))
+              Right((right.copy(end = in.end), left.current))
           }
 
         case None =>

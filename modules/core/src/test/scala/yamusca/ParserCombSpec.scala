@@ -230,6 +230,17 @@ class ParserCombSpec extends FlatSpec with Matchers {
       map(t => t._2 should be (Template(Seq(Literal("'"), Variable("test", false), Literal("'")))))
   }
 
+  it should "parse long sections" in {
+    val templateStr = """{{#a}}x
+                        |{{b}}yz{{c}}
+                        |{{/a}}""".stripMargin
+    parseTemplate(ParseInput(templateStr)).
+      left.map(e => fail(e._2)).
+      map(t => t._2 should be (Template(Seq(
+        Section("a", Seq(Literal("x\n"), Variable("b", false), Literal("yz"), Variable("c", false), Literal("\n")))
+      ))))
+  }
+
   it should "parse multiple sections" in {
     parseTemplate(ParseInput("{{#bool}}first{{/bool}} {{two}} {{#bool}}third{{/bool}}")).
       left.map(e => fail(e._2)).
