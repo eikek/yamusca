@@ -58,6 +58,9 @@ trait instances {
   implicit def listValueConverter[A](implicit c: ValueConverter[Seq[A]]): ValueConverter[List[A]] =
     ValueConverter.of[List[A]](seq => c(seq))
 
+  implicit def setValueConverter[A](implicit c: ValueConverter[Seq[A]]): ValueConverter[Set[A]] =
+    ValueConverter.of[Set[A]](set => c(set.toSeq))
+
   implicit def mapValueConverter[A](implicit c: ValueConverter[A]): ValueConverter[Map[String, A]] =
     ValueConverter.of(m => Value.fromContext(Context.from(name => m.get(name).map(c)), m.isEmpty))
 
