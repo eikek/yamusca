@@ -1,7 +1,5 @@
-addSbtPlugin("io.get-coursier" % "sbt-coursier" % "2.0.0-RC3-2")
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.10")
 addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.9.0")
 addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.3.7")
-addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.0.0-M2")
+addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.0.1-M3")
 addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.11")
 addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.6")

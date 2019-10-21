@@ -1,4 +1,3 @@
-import com.typesafe.sbt.pgp.PgpKeys.publishSigned
 import libs._
 import xerial.sbt.Sonatype._
 import ReleaseTransformations._

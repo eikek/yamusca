@@ -2,7 +2,7 @@ import sbt._
 
 object libs {
 
-  val `scala-version` = "2.13.0"
+  val `scala-version` = "2.13.1"
 
   // https://github.com/scalatest/scalatest
   // ASL 2.0
@@ -12,9 +12,9 @@ object libs {
 
   // https://github.com/circe/circe
   // ASL 2.0
-  val `circe-core` = "io.circe" %% "circe-core" % "0.12.1"
-  val `circe-generic` = "io.circe" %% "circe-generic" % "0.12.1"
-  val `circe-parser` = "io.circe" %% "circe-parser" % "0.12.1"
+  val `circe-core` = "io.circe" %% "circe-core" % "0.12.2"
+  val `circe-generic` = "io.circe" %% "circe-generic" % "0.12.2"
+  val `circe-parser` = "io.circe" %% "circe-parser" % "0.12.2"
 
   // https://github.com/scalate/scalate
   // ASL 2.0
