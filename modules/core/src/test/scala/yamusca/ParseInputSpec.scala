@@ -2,8 +2,10 @@ package yamusca
 
 import org.scalatest._
 import yamusca.parser._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class ParseInputSpec extends FlatSpec with Matchers {
+class ParseInputSpec extends AnyFlatSpec with Matchers {
 
   "current" should "return current substring" in {
     ParseInput("ab").dropLeft(1).current should be ("b")
