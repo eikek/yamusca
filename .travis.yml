@@ -10,6 +10,7 @@ jdk:
 cache:
   directories:
     - $HOME/.ivy2/cache
+    - $HOME/.coursier/cache
     - $HOME/.sbt/boot
 
 script:
