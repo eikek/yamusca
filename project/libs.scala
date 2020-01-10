@@ -18,7 +18,7 @@ object libs {
 
   // https://github.com/scalate/scalate
   // ASL 2.0
-  val `scalate-core` = "org.scalatra.scalate" %% "scalate-core" % "1.9.4"
+  val `scalate-core` = "org.scalatra.scalate" %% "scalate-core" % "1.9.5"
 
   // https://github.com/rickynils/scalacheck
   // unmodified 3-clause BSD
