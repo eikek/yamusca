@@ -11,8 +11,10 @@ import org.scalatest._
 
 import yamusca.imports._
 import yamusca.implicits._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class ConverterSpec extends FlatSpec with Matchers {
+class ConverterSpec extends AnyFlatSpec with Matchers {
 
   case class Numbers(
     int: Int = 15,

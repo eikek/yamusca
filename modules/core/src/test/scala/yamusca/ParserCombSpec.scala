@@ -5,8 +5,10 @@ import org.scalatest._
 import yamusca.data._
 import yamusca.parser._
 import yamusca.parser.mustache._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class ParserCombSpec extends FlatSpec with Matchers {
+class ParserCombSpec extends AnyFlatSpec with Matchers {
 
   "standalone" should "ignore whitespace around p if only thing in line" in {
     val sp = standaloneOr(consume("x"))
