@@ -6,8 +6,10 @@ import yamusca.syntax._
 import yamusca.context.Find
 import yamusca.expand.Expand
 import yamusca.util._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class YamuscaSpec extends FlatSpec with Matchers {
+class YamuscaSpec extends AnyFlatSpec with Matchers {
 
   def expectResult(template: String, expected: String, data: Context): Unit = {
     val t = mustache.parse(template) match {

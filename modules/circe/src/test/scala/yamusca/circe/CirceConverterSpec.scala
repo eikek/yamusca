@@ -3,8 +3,10 @@ package yamusca.circe
 import org.scalatest._
 import io.circe.generic.auto._, io.circe.syntax._
 import yamusca.implicits._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class CirceConverterSpec extends FlatSpec with Matchers {
+class CirceConverterSpec extends AnyFlatSpec with Matchers {
 
   case class Person(name: String, year: Int)
   case class University(name: String, students: List[Person])
