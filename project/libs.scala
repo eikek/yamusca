@@ -6,7 +6,7 @@ object libs {
 
   // https://github.com/scalatest/scalatest
   // ASL 2.0
-  val scalatest = "org.scalatest" %% "scalatest" % "3.1.0"
+  val scalatest = "org.scalatest" %% "scalatest" % "3.1.1"
 
   val `mustache-java` = "com.github.spullara.mustache.java" % "compiler" % "0.9.6"
 
