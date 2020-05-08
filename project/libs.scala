@@ -2,7 +2,8 @@ import sbt._
 
 object libs {
 
-  val `scala-version` = "2.13.1"
+  val scalaVersion213 = "2.13.2"
+  val scalaVersion212 = "2.12.11"
 
   // https://github.com/scalatest/scalatest
   // ASL 2.0

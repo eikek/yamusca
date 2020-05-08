@@ -1,6 +1,5 @@
 package yamusca.circe
 
-import org.scalatest._
 import io.circe.generic.auto._, io.circe.syntax._
 import yamusca.implicits._
 import org.scalatest.flatspec.AnyFlatSpec

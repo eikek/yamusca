@@ -1,6 +1,5 @@
 package yamusca
 
-import org.scalatest._
 import yamusca.imports._
 import yamusca.syntax._
 import yamusca.context.Find

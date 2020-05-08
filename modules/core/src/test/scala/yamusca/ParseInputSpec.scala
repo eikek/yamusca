@@ -1,6 +1,5 @@
 package yamusca
 
-import org.scalatest._
 import yamusca.parser._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

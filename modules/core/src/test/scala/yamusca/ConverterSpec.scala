@@ -7,8 +7,6 @@ import java.util.UUID
 import java.time.{Duration,Instant}
 import java.math.{BigDecimal => JavaBigDecimal, BigInteger => JavaBigInteger}
 
-import org.scalatest._
-
 import yamusca.imports._
 import yamusca.implicits._
 import org.scalatest.flatspec.AnyFlatSpec

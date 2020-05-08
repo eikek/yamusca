@@ -1,7 +1,6 @@
 package yamusca
 
 import java.util.concurrent.atomic.AtomicBoolean
-import org.scalatest._
 import yamusca.data._
 import yamusca.parser._
 import yamusca.parser.mustache._

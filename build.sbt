@@ -21,8 +21,8 @@ lazy val commonSettings = Seq(
   organization := "com.github.eikek",
   licenses := Seq("MIT" -> url("http://spdx.org/licenses/MIT")),
   homepage := Some(url("https://github.com/eikek")),
-  scalaVersion := `scala-version`,
-  crossScalaVersions := Seq("2.12.8", `scala-version`),
+  scalaVersion := scalaVersion213,
+  crossScalaVersions := Seq(scalaVersion212, scalaVersion213),
   scalacOptions := {
     if (scalaBinaryVersion.value.startsWith("2.13")) {
       scalacOpts.filter(o => o != "-Yno-adapted-args" && o != "-Ywarn-unused-import")
@@ -30,8 +30,13 @@ lazy val commonSettings = Seq(
       scalacOpts
     }
   },
-  scalacOptions in (Compile, console) ~= (_ filterNot (Set("-Xfatal-warnings", "-Ywarn-unused-import").contains)),
-  scalacOptions in (Test, console) := (scalacOptions in (Compile, console)).value
+  scalacOptions in (Compile, console) := Seq(),
+  scalacOptions in (Test, console) := (scalacOptions in (Compile, console)).value,
+  initialCommands := """
+    import yamusca.imports._
+    import yamusca.implicits._
+    import yamusca.parser.ParseInput
+  """
 ) ++ publishSettings
 
 lazy val publishSettings = Seq(
