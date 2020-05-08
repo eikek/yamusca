@@ -1,4 +1,3 @@
-import libs._
 import xerial.sbt.Sonatype._
 import ReleaseTransformations._
 
@@ -16,13 +15,17 @@ val scalacOpts: Seq[String] = Seq(
   "-Ywarn-unused-import"
 )
 
+val updateReadme = inputKey[Unit]("Update readme")
+
 lazy val commonSettings = Seq(
   name := "yamusca",
   organization := "com.github.eikek",
   licenses := Seq("MIT" -> url("http://spdx.org/licenses/MIT")),
   homepage := Some(url("https://github.com/eikek")),
-  scalaVersion := scalaVersion213,
-  crossScalaVersions := Seq(scalaVersion212, scalaVersion213),
+  scalaVersion := Dependencies.scalaVersion213,
+  crossScalaVersions := Seq(
+    Dependencies.scalaVersion212,
+    Dependencies.scalaVersion213),
   scalacOptions := {
     if (scalaBinaryVersion.value.startsWith("2.13")) {
       scalacOpts.filter(o => o != "-Yno-adapted-args" && o != "-Ywarn-unused-import")
@@ -88,19 +91,19 @@ lazy val macros = project.in(file("modules/macros")).
   settings(
     name := "yamusca-macros",
     incOptions := incOptions.value.withLogRecompileOnMacro(false),
-    libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
-    ))
+    libraryDependencies ++=
+      Dependencies.scalaReflect(scalaVersion.value)
+    )
 
 lazy val core = (project in file("modules/core")).
   settings(commonSettings).
   settings(publishSettings).
   settings(
     name := "yamusca-core",
-    libraryDependencies ++= Seq(
-      scalatest % "test",
-      "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
-    )).
+    libraryDependencies ++=
+      Dependencies.scalatest.map(_ % Test) ++
+      Dependencies.scalaReflect(scalaVersion.value)
+  ).
   dependsOn(macros)
 
 lazy val circe = project.in(file("modules/circe")).
@@ -109,10 +112,10 @@ lazy val circe = project.in(file("modules/circe")).
   settings(
     name := "yamusca-circe",
     description := "Provide value converter for circes json values",
-    libraryDependencies ++= Seq(
-      `circe-core`,
-      scalatest % "test", `circe-generic` % "test"
-    )).
+    libraryDependencies ++=
+      Dependencies.circeCore ++
+      (Dependencies.scalatest ++ Dependencies.circeGeneric).map(_ % Test)
+    ).
   dependsOn(core)
 
 lazy val benchmark = project.in(file("modules/benchmark")).
@@ -121,11 +124,38 @@ lazy val benchmark = project.in(file("modules/benchmark")).
   settings(noPublish).
   settings(
     name := "yamusca-benchmark",
-    libraryDependencies ++= Seq(
-      `mustache-java`, `circe-parser`, `circe-generic`, `scalate-core`
-    )
+    libraryDependencies ++=
+      Dependencies.mustacheJava ++
+      Dependencies.circeParser ++
+      Dependencies.circeGeneric ++
+      Dependencies.scalateCore
   ).
   dependsOn(core, circe)
+
+lazy val readme = project
+  .in(file("modules/readme"))
+  .enablePlugins(MdocPlugin)
+  .settings(commonSettings)
+  .settings(noPublish)
+  .settings(
+    name := "yamusca-readme",
+    libraryDependencies ++=
+      Dependencies.circeAll,
+    scalacOptions := Seq(),
+    mdocVariables := Map(
+      "VERSION" -> version.value
+    ),
+    updateReadme := {
+      mdoc.evaluated
+      val out = mdocOut.value / "readme.md"
+      val target = (LocalRootProject / baseDirectory).value / "README.md"
+      val logger = streams.value.log
+      logger.info(s"Updating readme: $out -> $target")
+      IO.copyFile(out, target)
+      ()
+    }
+  )
+  .dependsOn(core, circe)
 
 lazy val root = project.in(file(".")).
   settings(commonSettings).

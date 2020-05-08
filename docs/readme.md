@@ -40,35 +40,14 @@ It is available for Scala 2.12 and 2.13.
 Simple Example
 --------------
 
-```scala
+```scala mdoc
 import yamusca.imports._
 
 val data = Context("name" -> Value.of("Eike"), "items" -> Value.fromSeq( List("one", "two").map(Value.of) ))
-// data: Context = yamusca.context$Context$$anon$2@f96e8e9
 
 val templ = mustache.parse("Hello {{name}}, items: {{#items}} - {{.}}{{^-last}}, {{/-last}}{{/items}}.")
-// templ: Either[(yamusca.parser.ParseInput, String), Template] = Right(
-//   Template(
-//     Vector(
-//       Literal("Hello "),
-//       Variable("name", false),
-//       Literal(", items: "),
-//       Section(
-//         "items",
-//         Vector(
-//           Literal(" - "),
-//           Variable(".", false),
-//           Section("-last", Vector(Literal(", ")), true)
-//         ),
-//         false
-//       ),
-//       Literal(".")
-//     )
-//   )
-// )
 
 mustache.render(templ.toOption.get)(data)
-// res0: String = "Hello Eike, items:  - one,  - two."
 ```
 
 This is the basic usage, but involves creation of the `Context` value
@@ -79,16 +58,14 @@ class. This is a function `A => Value` to convert an `A` into a `Value`
 form (which can finally be converted to a `Context`). Adding another
 import gets rid of some boilerplate for creating a `Context` object:
 
-```scala
+```scala mdoc
 import yamusca.implicits._
 
 case class Data(name: String, items: List[String])
 
 implicit val dataConv: ValueConverter[Data] = ValueConverter.deriveConverter[Data]
-// dataConv: ValueConverter[Data] = <function1>
 
 Data("Eike", List("one", "two")).unsafeRender("Hello {{name}}, items: {{#items}} - {{.}}, {{/items}}.")
-// res1: String = "Hello Eike, items:  - one,  - two, ."
 ```
 
 The `deriveConverter` is a macro that creates a `ValueConverter`
@@ -111,33 +88,26 @@ Parsing and expanding
 
 In order to parse a string into a template, you can use `parse`:
 
-```scala
+```scala mdoc
 import yamusca.imports._
 import yamusca.parser.ParseInput
 
 val te = mustache.parse("hello {{name}}!")
-// te: Either[(ParseInput, String), Template] = Right(
-//   Template(Vector(Literal("hello "), Variable("name", false), Literal("!")))
-// )
 ```
 
 which returns a `Either[(ParseInput, String), Template]`. If you parse
 constant templates you can use the `mustache` interpolator, which will
 throw exceptions on parsing errors:
 
-```scala
+```scala mdoc
 val t = mustache"hello {{name}}!"
-// t: Template = Template(
-//   Vector(Literal("hello "), Variable("name", false), Literal("!"))
-// )
 ```
 
 Once you have a template you can render it by supplying a `Context`
 object:
 
-```scala
+```scala mdoc
 mustache.render(t)(Context.empty)
-// res2: String = "hello !"
 ```
 
 The `Context` is defined as `String => (Context, Option[Value])`, so it
@@ -145,9 +115,8 @@ may return a new `Context` with every value. You can use `expand` to get
 the final `Context` that has been threaded through the expansion
 process.
 
-```scala
+```scala mdoc
 val res = mustache.expand(t)(Context.empty)
-// res: (Context, String) = (Context.empty, "hello !")
 ```
 
 Lazy Context Example
@@ -156,7 +125,7 @@ Lazy Context Example
 The following is an (contrived) example showing a how to allow the
 context to load things on demand.
 
-```scala
+```scala mdoc
 import java.nio.file.{Files, Path, Paths}
 import java.security.MessageDigest
 
@@ -181,44 +150,12 @@ val template1 = mustache.parse(
   """|Name: {{name}}
      |Size: {{size}}""".stripMargin
 ).toOption.get
-// template1: Template = Template(
-//   Vector(
-//     Literal("Name: "),
-//     Variable("name", false),
-//     Literal(
-//       """
-// Size: """
-//     ),
-//     Variable("size", false)
-//   )
-// )
 val template2 = mustache.parse(
   """|Name: {{name}}
      |Sha: {{sha}}
      |Sha again: {{sha}}
      |Size: {{size}}""".stripMargin
 ).toOption.get
-// template2: Template = Template(
-//   Vector(
-//     Literal("Name: "),
-//     Variable("name", false),
-//     Literal(
-//       """
-// Sha: """
-//     ),
-//     Variable("sha", false),
-//     Literal(
-//       """
-// Sha again: """
-//     ),
-//     Variable("sha", false),
-//     Literal(
-//       """
-// Size: """
-//     ),
-//     Variable("size", false)
-//   )
-// )
 
 
 def main(n: Int, f: Path): Unit = {
@@ -233,13 +170,7 @@ def main(n: Int, f: Path): Unit = {
 }
 
 main(1, Paths.get("build.sbt"))
-// (FileData(None,build.sbt),Name: build.sbt
-// Size: 4571)
 main(2, Paths.get("build.sbt"))
-// (FileData(Some(e45c6ddbc9f8866d6460ff5863935e49c8c39c881ab36424535425646856a7),build.sbt),Name: build.sbt
-// Sha: e45c6ddbc9f8866d6460ff5863935e49c8c39c881ab36424535425646856a7
-// Sha again: e45c6ddbc9f8866d6460ff5863935e49c8c39c881ab36424535425646856a7
-// Size: 4571)
 ```
 
 The `FileData` case class implements the
