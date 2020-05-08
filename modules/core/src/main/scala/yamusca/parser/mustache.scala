@@ -94,7 +94,7 @@ object mustache extends Parsers {
     }
 
   val parseEndSection: Parser[String] =
-    standaloneOr(parseTag(_ == '/').cut).
+    standaloneOr(parseTag(_ == '/')).
       map({ case (_, _, name) => name.trim })
 
   def consumeUntilEndSection(name: String): Parser[ParseInput] = { in =>

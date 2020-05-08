@@ -181,6 +181,7 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
     check("{{#test}}hallo{{/test}} bla bla", Section("test", Seq(Literal("hallo")), false), " bla bla")
     check("{{^test}}hallo{{/test}} bla bla", Section("test", Seq(Literal("hallo")), true), " bla bla")
     check("{{#test}}hallo {{name}}{{/test}}", Section("test", Seq(Literal("hallo "), Variable("name", false)), false), "")
+    check("{{#a}}\n{{/a}}r", Section("a", Seq.empty), "r")
   }
 
   "parseElement" should "parse all elements" in {
