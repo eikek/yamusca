@@ -9,7 +9,7 @@ class ParserBenchmark {
 
   val in = ParseInput(template)
   val rn = ParseInput("\r\n")
-  val n = ParseInput("\n")
+  val n  = ParseInput("\n")
 
   val tag1 = ParseInput("{{name}}")
   val tag2 = ParseInput("{{#name}}")
@@ -20,36 +20,29 @@ class ParserBenchmark {
 
   val lit1 = ParseInput("abc \n  {{#section}}")
 
-
 //  @Benchmark
-  def consume1(): Unit = {
+  def consume1(): Unit =
     consume("<div>Timeline</div>")(in)
-  }
 
 //  @Benchmark
-  def newLine1(): Unit = {
+  def newLine1(): Unit =
     newLine(in)
-  }
 
 //  @Benchmark
-  def newLine2(): Unit = {
+  def newLine2(): Unit =
     newLine(rn)
-  }
 
 //  @Benchmark
-  def newLine3(): Unit = {
+  def newLine3(): Unit =
     newLine(n)
-  }
 
 //  @Benchmark
-  def consumeUntil1(): Unit = {
+  def consumeUntil1(): Unit =
     consumeUntil("</div>")(in)
-  }
 
 //  @Benchmark
-  def parseTag1(): Unit = {
+  def parseTag1(): Unit =
     parseTag(tag1)
-  }
 
   // @Benchmark
   // def parseTag2(): Unit = {
@@ -77,9 +70,8 @@ class ParserBenchmark {
   // }
 
   @Benchmark
-  def consumeUntilEndSection1(): Unit = {
+  def consumeUntilEndSection1(): Unit =
     consumeUntilEndSection("tweets")(in)
-  }
 
   // @Benchmark
   // def parseSection1(): Unit = {
@@ -92,7 +84,6 @@ class ParserBenchmark {
   // }
 
   @Benchmark
-  def parseTemplate1(): Unit = {
+  def parseTemplate1(): Unit =
     parseTemplate(in)
-  }
 }

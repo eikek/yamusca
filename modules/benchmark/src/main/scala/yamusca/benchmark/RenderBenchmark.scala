@@ -13,8 +13,8 @@ import yamusca.implicits._
 class RenderBenchmark {
 
   var data: JsonObject = _
-  var yt: Template = _
-  var jt: Mustache = _
+  var yt: Template     = _
+  var jt: Mustache     = _
 
   @Setup
   def setup(): Unit = {
@@ -28,16 +28,17 @@ class RenderBenchmark {
 
   def arrToJava(ja: Vector[Json]): java.util.List[Any] = {
     val l = new java.util.ArrayList[Any]
-    ja.foreach(j => {
+    ja.foreach { j =>
       j.fold[Unit](
         (),
         b => l.add(s"$b"),
         n => l.add(s"${n.toLong.getOrElse(n.toDouble)}"),
         s => l.add(s),
         vs => l.add(arrToJava(vs)),
-        obj => l.add(objToJava(obj)))
+        obj => l.add(objToJava(obj))
+      )
       ()
-    })
+    }
 
     l
   }
@@ -45,43 +46,44 @@ class RenderBenchmark {
   def objToJava(jo: JsonObject): java.util.Map[String, Any] = {
     val m = new java.util.HashMap[String, Any]()
     jo.keys.foreach { name =>
-      jo(name).foreach { _.fold(
-        (),
-        b => m.put(name, s"$b"),
-        n => m.put(name, s"${n.toLong.getOrElse(n.toDouble)}"),
-        s => m.put(name, s),
-        vs => m.put(name, arrToJava(vs)),
-        obj => m.put(name, objToJava(obj)))
+      jo(name).foreach {
+        _.fold(
+          (),
+          b => m.put(name, s"$b"),
+          n => m.put(name, s"${n.toLong.getOrElse(n.toDouble)}"),
+          s => m.put(name, s),
+          vs => m.put(name, arrToJava(vs)),
+          obj => m.put(name, objToJava(obj))
+        )
       }
     }
     m
   }
 
   def dataJava = {
-    val c = objToJava(data)
+    val c   = objToJava(data)
     val ctx = new java.util.HashMap[String, Any]()
     ctx.put("tweets", java.util.Arrays.asList(c, c, c))
     ctx
   }
 
-
   @Benchmark
   def parseAndRenderYamusca(): Unit = {
     val v = data.asMustacheValue
-    mustache.render(mustache.parse(template).toOption.get)(Context("tweets" -> Value.seq(v, v, v)))
+    mustache.render(mustache.parse(template).toOption.get)(
+      Context("tweets" -> Value.seq(v, v, v))
+    )
   }
 
   @Benchmark
-  def parseOnlyYamusca(): Unit = {
+  def parseOnlyYamusca(): Unit =
     mustache.parse(template)
-  }
-
 
   @Benchmark
   def parseAndRenderJava(): Unit = {
     val mf = new DefaultMustacheFactory()
-    val t = mf.compile(new StringReader(template), "template")
-    val w = new StringWriter()
+    val t  = mf.compile(new StringReader(template), "template")
+    val w  = new StringWriter()
     t.execute(w, dataJava)
   }
 
@@ -94,7 +96,7 @@ class RenderBenchmark {
   @Benchmark
   def renderOnlyYamusca(): Unit = {
     val v = data.asMustacheValue
-    mustache.render(yt)(Context("tweets" -> Value.seq(v,v,v)))
+    mustache.render(yt)(Context("tweets" -> Value.seq(v, v, v)))
   }
 
   @Benchmark

@@ -21,7 +21,6 @@ object syntax {
     def value: Value = Value.of(s)
   }
 
-
   implicit final class ElementOps(val el: Element) extends AnyVal {
 
     def asString(implicit s: Show[Element]): String = Element.show(el)

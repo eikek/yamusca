@@ -1,6 +1,12 @@
 package yamusca.parser
 
-final case class ParseInput(raw: String, pos: Int, end: Int, delim: Delim, cutted: Int = 0) {
+final case class ParseInput(
+    raw: String,
+    pos: Int,
+    end: Int,
+    delim: Delim,
+    cutted: Int = 0
+) {
   def current: String =
     if (exhausted) ""
     else raw.substring(pos, end)
@@ -36,7 +42,10 @@ final case class ParseInput(raw: String, pos: Int, end: Int, delim: Delim, cutte
 
   def expandRight(n: Int) =
     if (n < 0) throw new IllegalArgumentException("n must be positive or 0")
-    else if (end + n > raw.length) throw new IndexOutOfBoundsException(s"Expand right $n (${end + n}) exceeds raw input ${raw.length}")
+    else if (end + n > raw.length)
+      throw new IndexOutOfBoundsException(
+        s"Expand right $n (${end + n}) exceeds raw input ${raw.length}"
+      )
     else ParseInput(raw, pos, end + n, delim)
 
   def moveRight(n: Int) =
@@ -45,8 +54,11 @@ final case class ParseInput(raw: String, pos: Int, end: Int, delim: Delim, cutte
 
   def expandLeft(n: Int) =
     if (n < 0) throw new IllegalArgumentException("n must be positive or 0")
-    else if (pos - n < 0) throw new IndexOutOfBoundsException(s"Expand left $n (${pos -n}) exceeds raw input")
-    else ParseInput(raw, pos -n, end, delim)
+    else if (pos - n < 0)
+      throw new IndexOutOfBoundsException(
+        s"Expand left $n (${pos - n}) exceeds raw input"
+      )
+    else ParseInput(raw, pos - n, end, delim)
 
   def charAt(n: Int): Option[Char] =
     if (n >= length || n < 0) None
@@ -64,16 +76,17 @@ final case class ParseInput(raw: String, pos: Int, end: Int, delim: Delim, cutte
     @annotation.tailrec
     def go(index: Int): Option[Int] =
       if (index < 0) Some(0)
-      else raw.charAt(index) match {
-        case c if c == ' ' || c == '\t' =>
-          go(index -1)
-        case c if c == '\n' =>
-          Some(index)
-        case _ =>
-          None
-      }
+      else
+        raw.charAt(index) match {
+          case c if c == ' ' || c == '\t' =>
+            go(index - 1)
+          case c if c == '\n' =>
+            Some(index)
+          case _ =>
+            None
+        }
 
-    go(pos -1)
+    go(pos - 1)
   }
 }
 

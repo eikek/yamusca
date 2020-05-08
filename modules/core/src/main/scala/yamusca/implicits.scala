@@ -8,7 +8,7 @@ object implicits extends converter.instances with converter.syntax {
   implicit class StringInterpolations(sc: StringContext) {
     def mustache(args: Any*): Template =
       parse(value(args)) match {
-        case Right(t) => t
+        case Right(t)  => t
         case Left(err) => sys.error(s"Cannot parse mustache template: $err")
       }
 

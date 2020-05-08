@@ -6,16 +6,17 @@ object context {
 
   trait Context {
     def find(key: String): (Context, Option[Value])
-    def :: (head: Context): Context = Context.prepend(head, this)
+    def ::(head: Context): Context = Context.prepend(head, this)
 
-    def tail: Context = this match {
-      case c: StackedContext =>
-        c.rest match {
-          case Nil => Context.empty
-          case a :: rest => StackedContext(a, rest)
-        }
-      case _ => this
-    }
+    def tail: Context =
+      this match {
+        case c: StackedContext =>
+          c.rest match {
+            case Nil       => Context.empty
+            case a :: rest => StackedContext(a, rest)
+          }
+        case _ => this
+      }
   }
 
   private case class StackedContext(first: Context, rest: List[Context]) extends Context {
@@ -43,55 +44,58 @@ object context {
   object Context {
     private def prepend(c1: Context, c2: Context): Context =
       (c1, c2) match {
-        case (StackedContext(ch, ct), StackedContext(dh, dt)) => StackedContext(ch, ct ::: List(dh) ::: dt)
+        case (StackedContext(ch, ct), StackedContext(dh, dt)) =>
+          StackedContext(ch, ct ::: List(dh) ::: dt)
         case (StackedContext(ch, ct), d) => StackedContext(ch, ct ::: List(d))
         case (c, StackedContext(dh, dt)) => StackedContext(c, dh :: dt)
-        case (c, d) => StackedContext(c, List(d))
+        case (c, d)                      => StackedContext(c, List(d))
       }
 
     val empty: Context = new Context {
-      def find(key: String) = (this, None)
+      def find(key: String)           = (this, None)
       override def toString(): String = "Context.empty"
     }
 
-    def fromMap(m: Map[String, Value]): Context = new Context {
-      def find(key: String) = (this, m.get(key))
-    }
+    def fromMap(m: Map[String, Value]): Context =
+      new Context {
+        def find(key: String) = (this, m.get(key))
+      }
 
     def apply(ts: (String, Value)*): Context = fromMap(Map(ts: _*))
 
-    def from(f: String => Option[Value]): Context = new Context {
-      def find(key: String) = (this, f(key))
-    }
+    def from(f: String => Option[Value]): Context =
+      new Context {
+        def find(key: String) = (this, f(key))
+      }
 
     def indexContext(index: Int, length: Int): Context =
       Context(
         "-first" -> Value.of(index == 0),
-        "-last"  -> Value.of(index == length -1),
+        "-last"  -> Value.of(index == length - 1),
         "-index" -> Value.of(s"${1 + index}")
       )
   }
 
-
   sealed trait Value {
     def isEmpty: Boolean
-    def asContext: Context = this match {
-      case MapValue(v, _) => v
-      case _ => Context.from(key => if (key == ".") Some(this) else None)
-    }
+    def asContext: Context =
+      this match {
+        case MapValue(v, _) => v
+        case _              => Context.from(key => if (key == ".") Some(this) else None)
+      }
   }
   object Value {
-    def fromString(s: String): Value = SimpleValue(s)
-    def fromBoolean(b: Boolean): Value = BoolValue(b)
-    def fromSeq(vs: Seq[Value]): Value = ListValue(vs)
+    def fromString(s: String): Value                     = SimpleValue(s)
+    def fromBoolean(b: Boolean): Value                   = BoolValue(b)
+    def fromSeq(vs: Seq[Value]): Value                   = ListValue(vs)
     def fromContext(ctx: Context, empty: Boolean): Value = MapValue(ctx, empty)
-    def fromMap(m: Map[String, Value]) = fromContext(Context.fromMap(m), m.isEmpty)
+    def fromMap(m: Map[String, Value])                   = fromContext(Context.fromMap(m), m.isEmpty)
 
-    def of(s: String): Value = SimpleValue(s)
-    def of(s: Option[String]): Value = SimpleValue(s getOrElse "")
-    def of(b: Boolean): Value = BoolValue(b)
-    def seq(vs: Value*): Value = ListValue(vs)
-    def map(vs: (String, Value)*): Value = MapValue(Context(vs: _*), vs.isEmpty)
+    def of(s: String): Value                      = SimpleValue(s)
+    def of(s: Option[String]): Value              = SimpleValue(s.getOrElse(""))
+    def of(b: Boolean): Value                     = BoolValue(b)
+    def seq(vs: Value*): Value                    = ListValue(vs)
+    def map(vs: (String, Value)*): Value          = MapValue(Context(vs: _*), vs.isEmpty)
     def lambda(f: Section => Find[String]): Value = LambdaValue(f)
   }
   case class SimpleValue(v: String) extends Value {
@@ -109,10 +113,11 @@ object context {
   }
 
   case class Find[+A](run: Context => (Context, A)) { self =>
-    def flatMap[B](f: A => Find[B]): Find[B] = Find[B] { s =>
-      val (next, a) = run(s)
-      f(a).run(next)
-    }
+    def flatMap[B](f: A => Find[B]): Find[B] =
+      Find[B] { s =>
+        val (next, a) = run(s)
+        f(a).run(next)
+      }
 
     def map[B](f: A => B): Find[B] =
       flatMap(a => Find.unit(f(a)))
@@ -144,20 +149,19 @@ object context {
     def findOrEmpty(key: String): Find[Value] =
       find(key).map(_.getOrElse(Value.of(false)))
 
-    def findOrEmptyPath(path: String): Find[Value] = {
+    def findOrEmptyPath(path: String): Find[Value] =
       if (path == "." || path.indexOf('.') == -1) findOrEmpty(path)
       else {
         val parts = path.split('.').toList
-        parts.map(findOrEmpty).reduce({ (f1, f2) =>
+        parts.map(findOrEmpty).reduce { (f1, f2) =>
           f1.flatMap {
             case v if !v.isEmpty =>
               f2.stacked(v.asContext)
             case v =>
               unit(v)
           }
-        })
+        }
       }
-    }
 
     def get: Find[Context] = Find(s => (s, s))
 

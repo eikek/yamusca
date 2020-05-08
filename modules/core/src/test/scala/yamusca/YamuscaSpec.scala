@@ -12,32 +12,37 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
 
   def expectResult(template: String, expected: String, data: Context): Unit = {
     val t = mustache.parse(template) match {
-      case Right(x) => x
+      case Right(x)  => x
       case Left(err) => fail(s"Template parsing failed: $err")
     }
-    mustache.render(t)(data).visible should be (expected.visible)
+    mustache.render(t)(data).visible should be(expected.visible)
   }
 
   "stackedcontext" should "replace correct positions" in {
-    val sc = Context("name" -> Value.of("red")) :: Context("name" -> Value.of("blue")) :: Context.empty
+    val sc = Context("name" -> Value.of("red")) :: Context(
+      "name" -> Value.of("blue")
+    ) :: Context.empty
     val (c2, Some(v)) = sc.find("name") match {
       case (a, Some(b)) => (a, Some(b))
-      case _ => sys.error("unexpected")
+      case _            => sys.error("unexpected")
     }
-    v should be (Value.of("red"))
-    c2 should be (sc)
+    v should be(Value.of("red"))
+    c2 should be(sc)
   }
 
   "template" should "render literals" in {
     val t = Template(Literal("Hello"), Literal(" "), Literal("world!"))
-    t.renderResult(Context.empty) should be ("Hello world!")
+    t.renderResult(Context.empty) should be("Hello world!")
   }
 
   it should "render nested same sections" in {
     expectResult(
       "{{#a.b}}Hello {{#d.e}}world{{/d.e}}{{/a.b}}",
       "Hello world",
-      Context("a" -> Value.map("b" -> Value.fromBoolean(true)), "d" -> Value.map("e" -> Value.fromBoolean(true)))
+      Context(
+        "a" -> Value.map("b" -> Value.fromBoolean(true)),
+        "d" -> Value.map("e" -> Value.fromBoolean(true))
+      )
     )
     expectResult(
       "{{#a.b}}Hello {{#c}}world{{/c}}{{/a.b}}",
@@ -52,9 +57,9 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "replace variables" in {
-    val t = Template(Literal("Hello "), Variable("name"), Literal("!"))
+    val t       = Template(Literal("Hello "), Variable("name"), Literal("!"))
     val context = Context("name" -> Value.of("Harry"))
-    t.renderResult(context) should be ("Hello Harry!")
+    t.renderResult(context) should be("Hello Harry!")
   }
 
   it should "replace variables by dotted access" in {
@@ -67,26 +72,29 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
 
   it should "render nothing for non-existing vars" in {
     val t = Template(Literal("Hello "), Variable("name"), Literal("!"))
-    t.renderResult(Context.empty) should be ("Hello !")
+    t.renderResult(Context.empty) should be("Hello !")
   }
 
   it should "not render empty sections" in {
     val t = Template(Literal("Hello "), Section("name", Seq(Literal("World!"))))
-    t.renderResult(Context.empty) should be ("Hello ")
-    t.renderResult(Context("name" -> Value.of(""))) should be ("Hello ")
-    t.renderResult(Context("name" -> Value.of(false))) should be ("Hello ")
-    t.renderResult(Context("name" -> Value.seq())) should be ("Hello ")
+    t.renderResult(Context.empty) should be("Hello ")
+    t.renderResult(Context("name" -> Value.of(""))) should be("Hello ")
+    t.renderResult(Context("name" -> Value.of(false))) should be("Hello ")
+    t.renderResult(Context("name" -> Value.seq())) should be("Hello ")
   }
 
   it should "render inverted sections" in {
-    val t = Template(Literal("Hello "), Section("name", Seq(Literal("World!")), inverted = true))
-    t.renderResult(Context.empty) should be ("Hello World!")
-    t.renderResult(Context("name" -> Value.of(""))) should be ("Hello World!")
-    t.renderResult(Context("name" -> Value.of("haha"))) should be ("Hello ")
-    t.renderResult(Context("name" -> Value.of(false))) should be ("Hello World!")
-    t.renderResult(Context("name" -> Value.of(true))) should be ("Hello ")
-    t.renderResult(Context("name" -> Value.seq())) should be ("Hello World!")
-    t.renderResult(Context("name" -> Value.seq(Value.of("haha")))) should be ("Hello ")
+    val t = Template(
+      Literal("Hello "),
+      Section("name", Seq(Literal("World!")), inverted = true)
+    )
+    t.renderResult(Context.empty) should be("Hello World!")
+    t.renderResult(Context("name" -> Value.of(""))) should be("Hello World!")
+    t.renderResult(Context("name" -> Value.of("haha"))) should be("Hello ")
+    t.renderResult(Context("name" -> Value.of(false))) should be("Hello World!")
+    t.renderResult(Context("name" -> Value.of(true))) should be("Hello ")
+    t.renderResult(Context("name" -> Value.seq())) should be("Hello World!")
+    t.renderResult(Context("name" -> Value.seq(Value.of("haha")))) should be("Hello ")
   }
 
   it should "render sections with dotted access" in {
@@ -99,102 +107,117 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
 
   it should "render simple lists" in {
     val t = Template(Section("colors", Seq(Literal("- "), Variable("."), Literal("\n"))))
-    val context = Context("colors" -> Value.seq("red".value, "green".value, "yellow".value))
-    t.renderResult(context) should be ("- red\n- green\n- yellow\n")
+    val context =
+      Context("colors" -> Value.seq("red".value, "green".value, "yellow".value))
+    t.renderResult(context) should be("- red\n- green\n- yellow\n")
   }
 
   it should "render list of objects" in {
-    val t = Template(Section("colors", Seq(Literal("- "), Variable("name"), Literal("\n"))))
-    val context = Context("colors" -> Value.seq(
-      Value.map("name" -> "red".value), Value.map("name" -> "green".value), Value.map("name" -> "yellow".value)))
-    t.renderResult(context) should be ("- red\n- green\n- yellow\n")
+    val t =
+      Template(Section("colors", Seq(Literal("- "), Variable("name"), Literal("\n"))))
+    val context = Context(
+      "colors" -> Value.seq(
+        Value.map("name" -> "red".value),
+        Value.map("name" -> "green".value),
+        Value.map("name" -> "yellow".value)
+      )
+    )
+    t.renderResult(context) should be("- red\n- green\n- yellow\n")
   }
 
   it should "push/pop list element context" in {
-    val t = Template(Section("colors", Seq(Literal("- "), Variable("name"), Literal("\n"))))
+    val t =
+      Template(Section("colors", Seq(Literal("- "), Variable("name"), Literal("\n"))))
     val maps = Value.seq(
       Value.map("name" -> "red".value),
       Value.map(),
       Value.map("name" -> "green".value),
       Value.map(),
       Value.map("name" -> "blue".value),
-      Value.map())
+      Value.map()
+    )
     val context = Context("colors" -> maps)
-    t.renderResult(context) should be ("- red\n- \n- green\n- \n- blue\n- \n")
+    t.renderResult(context) should be("- red\n- \n- green\n- \n- blue\n- \n")
   }
 
   it should "render lambda values" in {
-    val t = Template(Section("colors", Seq(Literal("- "), Variable("name"), Literal("\n"))))
+    val t =
+      Template(Section("colors", Seq(Literal("- "), Variable("name"), Literal("\n"))))
     val context = Context(
-      "colors" -> Value.lambda(s =>
-        Expand.variableExpand.asString(Variable("name"))
-      ),
-      "name" -> "Willy".value
+      "colors" -> Value.lambda(s => Expand.variableExpand.asString(Variable("name"))),
+      "name"   -> "Willy".value
     )
-    t.renderResult(context) should be ("Willy")
-    t.renderResult(Context("colors" -> Value.lambda(s => Find.unit(s.asString)))) should be (
+    t.renderResult(context) should be("Willy")
+    t.renderResult(
+      Context("colors" -> Value.lambda(s => Find.unit(s.asString)))
+    ) should be(
       "{{#colors}}- {{name}}\n{{/colors}}"
     )
   }
 
   it should "print template strings" in {
-    Template(Literal("Hello"), Literal(" "), Literal("world!")).asString should be (
+    Template(Literal("Hello"), Literal(" "), Literal("world!")).asString should be(
       "Hello world!"
     )
-    Template(Literal("Hello "), Variable("name"), Literal("!")).asString should be (
+    Template(Literal("Hello "), Variable("name"), Literal("!")).asString should be(
       "Hello {{name}}!"
     )
-    Template(Literal("Hello "), Section("name", Seq(Literal("World!")), inverted = true)).asString should be (
+    Template(
+      Literal("Hello "),
+      Section("name", Seq(Literal("World!")), inverted = true)
+    ).asString should be(
       "Hello {{^name}}World!{{/name}}"
     )
-    Template(Section("colors", Seq(Literal("- "), Variable("."), Literal("\n")))).asString should be (
+    Template(
+      Section("colors", Seq(Literal("- "), Variable("."), Literal("\n")))
+    ).asString should be(
       "{{#colors}}- {{.}}\n{{/colors}}"
     )
-    Template(Section("colors", Seq(Literal("- "), Variable("name"), Literal("\n")))).asString should be (
+    Template(
+      Section("colors", Seq(Literal("- "), Variable("name"), Literal("\n")))
+    ).asString should be(
       "{{#colors}}- {{name}}\n{{/colors}}"
     )
   }
 
   it should "thread context through" in {
     val ctx0 = new Context {
-      def find(key: String): (Context, Option[Value]) = {
+      def find(key: String): (Context, Option[Value]) =
         (this, if (key == "x1") Some(Value.of("red")) else None)
-      }
     }
     val ctx1 = new Context {
-      def find(key: String): (Context, Option[Value]) = {
+      def find(key: String): (Context, Option[Value]) =
         (ctx0, if (key == "x2") Some(Value.of("blue")) else None)
-      }
     }
     val t0 = Template(Seq(Variable("x2"), Literal("-"), Variable("x1")))
-    t0.renderResult(ctx1) should be ("blue-red")
-    t0.renderResult(ctx0) should be ("-red")
+    t0.renderResult(ctx1) should be("blue-red")
+    t0.renderResult(ctx0) should be("-red")
 
     val t1 = Template(Seq(Variable("x1"), Literal("-"), Variable("x2")))
-    t1.renderResult(ctx1) should be ("-")
-    t1.renderResult(ctx0) should be ("red-")
+    t1.renderResult(ctx1) should be("-")
+    t1.renderResult(ctx0) should be("red-")
   }
 
   it should "handle new lines after tags" in {
-    val data = Context("boolean" -> Value.of(true))
+    val data     = Context("boolean" -> Value.of(true))
     val template = "#{{#boolean}}\n/\n  {{/boolean}}"
     info(s"template: ${template.visible}  expected: ${"#\n/".visible}")
     val t = mustache.parse(template).toOption.get
-    mustache.render(t)(data).visible should be ("#\n/\n".visible)
+    mustache.render(t)(data).visible should be("#\n/\n".visible)
   }
 
   it should "handle new lines before tags" in {
-    val data = Context("boolean" -> Value.of(true))
+    val data     = Context("boolean" -> Value.of(true))
     val template = """  {{#boolean}}
 #{{/boolean}}
 /"""
     info(s"template: ${template.visible}  expected: ${"#\n/".visible}")
     val t = mustache.parse(template).toOption.get
-    mustache.render(t)(data).visible should be ("#\n/".visible)
+    mustache.render(t)(data).visible should be("#\n/".visible)
   }
 
   it should "remove indented standalone lines" in {
-    val data = Context("boolean" -> Value.of(true))
+    val data     = Context("boolean" -> Value.of(true))
     val template = """|
 | This Is
   {{#boolean}}
@@ -206,13 +229,13 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
 | This Is
 |
 | A Line"""
-    val t = mustache.parse(template).toOption.get
+    val t        = mustache.parse(template).toOption.get
     info(s"template: ${template.visible}  expected: ${expected.visible}")
-    mustache.render(t)(data).visible should be (expected.visible)
+    mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "remove standalone lines" in {
-    val data = Context("boolean" -> Value.of(true))
+    val data     = Context("boolean" -> Value.of(true))
     val template = """|
 | This Is
 {{#boolean}}
@@ -224,13 +247,13 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
 | This Is
 |
 | A Line"""
-    val t = mustache.parse(template).toOption.get
+    val t        = mustache.parse(template).toOption.get
     info(s"template: ${template.visible}  expected: ${expected.visible}")
-    mustache.render(t)(data).visible should be (expected.visible)
+    mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "permit multiple sections per template" in {
-    val data = Context("bool" -> Value.of(true), "two" -> Value.of("second"))
+    val data     = Context("bool" -> Value.of(true), "two" -> Value.of("second"))
     val template = """|
 {{#bool}}
 * first
@@ -247,15 +270,15 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
 
     val t = mustache.parse(template).toOption.get
     info(s"template: ${template.visible}  expected: ${expected.visible}")
-    mustache.render(t)(data).visible should be (expected.visible)
+    mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "keep surrounding whitespace" in {
-    val data = Context("boolean" -> Value.of(true))
+    val data     = Context("boolean" -> Value.of(true))
     val template = " {{#boolean}}YES{{/boolean}}\n {{#boolean}}GOOD{{/boolean}}\n"
     val expected = " YES\n GOOD\n"
-    val t = mustache.parse(template).toOption.get
-    mustache.render(t)(data).visible should be (expected.visible)
+    val t        = mustache.parse(template).toOption.get
+    mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "access deep nested context" in {
@@ -300,35 +323,35 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
       |""".stripMargin
 
     val t = mustache.parse(template).toOption.get
-    mustache.render(t)(data).visible should be (expected.visible)
+    mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "render falsy sections" in {
-    val data = Context("boolean" -> Value.of(false))
+    val data     = Context("boolean" -> Value.of(false))
     val template = "'{{^boolean}}This should be rendered.{{/boolean}}'"
     val expected = "'This should be rendered.'"
-    val t = mustache.parse(template).toOption.get
-    mustache.render(t)(data).visible should be (expected.visible)
+    val t        = mustache.parse(template).toOption.get
+    mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "omit truthy sections" in {
-    val data = Context("boolean" -> Value.of(true))
+    val data     = Context("boolean" -> Value.of(true))
     val template = "'{{^boolean}}This should not be rendered.{{/boolean}}'"
     val expected = "''"
-    val t = mustache.parse(template).toOption.get
-    mustache.render(t)(data).visible should be (expected.visible)
+    val t        = mustache.parse(template).toOption.get
+    mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "treat objects and hashes like truthy values " in {
-    val data = Context("context" -> Value.map("name" -> Value.of("Joe")))
+    val data     = Context("context" -> Value.map("name" -> Value.of("Joe")))
     val template = "'{{^context}}Hi {{name}}.{{/context}}'"
     val expected = "''"
-    val t = mustache.parse(template).toOption.get
-    mustache.render(t)(data).visible should be (expected.visible)
+    val t        = mustache.parse(template).toOption.get
+    mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "allow multiple inverted sections" in {
-    val data = Context("bool" -> Value.of(false), "two" -> Value.of("second"))
+    val data     = Context("bool" -> Value.of(false), "two" -> Value.of("second"))
     val template = """|
       |{{^bool}}
       |* first
@@ -345,43 +368,46 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
       |""".stripMargin
 
     val t = mustache.parse(template).toOption.get
-    mustache.render(t)(data).visible should be (expected.visible)
+    mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "iterate over strings" in {
-    val data = Context("list" -> Value.fromSeq(List("a","b","c","d","e").map(Value.of)))
-    val template =  "'{{#list}}({{.}}){{/list}}'"
+    val data =
+      Context("list" -> Value.fromSeq(List("a", "b", "c", "d", "e").map(Value.of)))
+    val template = "'{{#list}}({{.}}){{/list}}'"
     val expected = "'(a)(b)(c)(d)(e)'"
-    val t = mustache.parse(template).toOption.get
-    mustache.render(t)(data).visible should be (expected.visible)
+    val t        = mustache.parse(template).toOption.get
+    mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "recognize \\r\\n line endings" in {
-    val data = Context("boolean" -> Value.of(true))
+    val data     = Context("boolean" -> Value.of(true))
     val template = "|\r\n{{#boolean}}\r\ntest\r\n{{/boolean}}\r\n|"
-    val expected =  "|\r\ntest\r\n|"
+    val expected = "|\r\ntest\r\n|"
 
     val t = mustache.parse(template).toOption.get
-    mustache.render(t)(data).visible should be (expected.visible)
+    mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "iterate nested arrays" in {
-    val data = Context("list" ->
-      Value.seq(
-        Value.fromSeq(List("1","2","3").map(Value.of)),
-        Value.fromSeq(List("a","b","c").map(Value.of))
-      ))
+    val data = Context(
+      "list" ->
+        Value.seq(
+          Value.fromSeq(List("1", "2", "3").map(Value.of)),
+          Value.fromSeq(List("a", "b", "c").map(Value.of))
+        )
+    )
     val template = "'{{#list}}({{#.}}{{.}}{{/.}}){{/list}}'"
     val expected = "'(123)(abc)'"
-    val t = mustache.parse(template).toOption.get
-    mustache.render(t)(data).visible should be (expected.visible)
+    val t        = mustache.parse(template).toOption.get
+    mustache.render(t)(data).visible should be(expected.visible)
   }
 
   "comment" should "be removed" in {
     val template = "123{{! this is a comment }}456"
     val expected = "123456"
-    val t = mustache.parse(template).toOption.get
-    mustache.render(t)(Context.empty) should be (expected)
+    val t        = mustache.parse(template).toOption.get
+    mustache.render(t)(Context.empty) should be(expected)
   }
 
   it should "remove the whole line" in {
@@ -499,16 +525,19 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
     expectResult(
       "{{#things}}{{^-first}}, {{/-first}}{{.}}{{/things}}",
       "1, 2, 3",
-      Context("things" -> Value.fromSeq(List("1","2","3").map(Value.of))))
+      Context("things" -> Value.fromSeq(List("1", "2", "3").map(Value.of)))
+    )
 
     expectResult(
       "{{#things}}{{.}}{{^-last}}, {{/-last}}{{/things}}",
       "1, 2, 3",
-      Context("things" -> Value.fromSeq(List("1","2","3").map(Value.of))))
+      Context("things" -> Value.fromSeq(List("1", "2", "3").map(Value.of)))
+    )
 
     expectResult(
       "{{#things}}{{-index}}. {{.}}\n{{/things}}",
       "1. one\n2. two\n3. three\n",
-      Context("things" -> Value.fromSeq(List("one","two","three").map(Value.of))))
+      Context("things" -> Value.fromSeq(List("one", "two", "three").map(Value.of)))
+    )
   }
 }

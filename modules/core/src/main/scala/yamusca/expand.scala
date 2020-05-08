@@ -5,32 +5,35 @@ import yamusca.context._
 
 object expand {
 
-  def renderResult(t: Template)(c: Context)(implicit r: Expand[Template]): String = {
+  def renderResult(t: Template)(c: Context)(implicit r: Expand[Template]): String =
     render(t)(c)._2
-  }
 
   def render(t: Template)(c: Context)(implicit r: Expand[Template]): (Context, String) = {
-    val b = new StringBuilder
+    val b         = new StringBuilder
     val (next, _) = r(b append _)(t).run(c)
     (next, b.toString)
   }
 
-  def renderTo(t: Template)(c: Context, f: String => Unit)(implicit r: Expand[Template]): Unit =
+  def renderTo(
+      t: Template
+  )(c: Context, f: String => Unit)(implicit r: Expand[Template]): Unit =
     r(f)(t).result(c)
 
   trait Expand[T] {
     def apply(consume: String => Unit)(e: T): Find[Unit]
-    def asString(e: T): Find[String] = Find { ctx =>
-      val buf = new StringBuilder
-      val (next, _) = apply(buf append _)(e).run(ctx)
-      (next, buf.toString)
-    }
+    def asString(e: T): Find[String] =
+      Find { ctx =>
+        val buf       = new StringBuilder
+        val (next, _) = apply(buf append _)(e).run(ctx)
+        (next, buf.toString)
+      }
   }
   object Expand {
-    def apply[T <: Element](f: T => Find[String]): Expand[T] = new Expand[T] {
-      def apply(consume: String => Unit)(e: T): Find[Unit] =
-        f(e).map(consume)
-    }
+    def apply[T <: Element](f: T => Find[String]): Expand[T] =
+      new Expand[T] {
+        def apply(consume: String => Unit)(e: T): Find[Unit] =
+          f(e).map(consume)
+      }
 
     // only &, <, >, ", and '
     def escapeHtml(s: String): String =
@@ -43,20 +46,25 @@ object expand {
     implicit val commentExpand: Expand[Comment] = Expand(e => Find.unit(""))
 
     implicit val variableExpand: Expand[Variable] = Expand {
-      case Variable(key, unescape) => Find.findOrEmptyPath(key).map {
-        case SimpleValue(s) => if (unescape) s else escapeHtml(s)
-        case BoolValue(b) => if (b) b.toString else ""
-        case MapValue(_, e) =>
-          val s = if (e) "<empty object>" else "<non-empty object>"
-          if (unescape) s else escapeHtml(s)
-        case ListValue(x) =>
-          if (unescape) x.toString else escapeHtml(x.toString)
-        case _: LambdaValue =>
-          if (unescape) "<lambda>" else escapeHtml("<lambda>")
-      }
+      case Variable(key, unescape) =>
+        Find.findOrEmptyPath(key).map {
+          case SimpleValue(s) => if (unescape) s else escapeHtml(s)
+          case BoolValue(b)   => if (b) b.toString else ""
+          case MapValue(_, e) =>
+            val s = if (e) "<empty object>" else "<non-empty object>"
+            if (unescape) s else escapeHtml(s)
+          case ListValue(x) =>
+            if (unescape) x.toString else escapeHtml(x.toString)
+          case _: LambdaValue =>
+            if (unescape) "<lambda>" else escapeHtml("<lambda>")
+        }
     }
 
-    implicit def sectionExpand(implicit e1: Expand[Literal], e2: Expand[Variable], e3: Expand[Comment]): Expand[Section] =
+    implicit def sectionExpand(implicit
+        e1: Expand[Literal],
+        e2: Expand[Variable],
+        e3: Expand[Comment]
+    ): Expand[Section] =
       new Expand[Section] {
         def apply(consume: String => Unit)(s: Section): Find[Unit] = {
           val expandInner: Find[Unit] = {
@@ -69,7 +77,12 @@ object expand {
               if (v.isEmpty) expandInner
               else Find.unit(())
             case ListValue(vs) =>
-              val list = vs.zipWithIndex.map({case (v, i) => expandInner.stacked(v.asContext).stacked(Context.indexContext(i, vs.size))})
+              val list = vs.zipWithIndex.map({
+                case (v, i) =>
+                  expandInner
+                    .stacked(v.asContext)
+                    .stacked(Context.indexContext(i, vs.size))
+              })
               list.foldLeft(Find.unit(()))(_ andThen _)
             case LambdaValue(f) =>
               f(s).map(consume)
@@ -81,14 +94,19 @@ object expand {
         }
       }
 
-    implicit def elementExpand(implicit e1: Expand[Literal], e2: Expand[Variable], e3: Expand[Section], e4: Expand[Comment]): Expand[Element] =
+    implicit def elementExpand(implicit
+        e1: Expand[Literal],
+        e2: Expand[Variable],
+        e3: Expand[Section],
+        e4: Expand[Comment]
+    ): Expand[Element] =
       new Expand[Element] {
         def apply(consume: String => Unit)(e: Element): Find[Unit] =
           e match {
-            case v: Literal => e1(consume)(v)
+            case v: Literal  => e1(consume)(v)
             case v: Variable => e2(consume)(v)
-            case v: Section => e3(consume)(v)
-            case v: Comment => e4(consume)(v)
+            case v: Section  => e3(consume)(v)
+            case v: Comment  => e4(consume)(v)
           }
       }
 

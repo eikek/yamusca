@@ -4,7 +4,8 @@ package object benchmark {
 
   // this test template is from mustache.java: https://github.com/spullara/mustache.java
   // Apache License 2.0
-  val template = """<div>Timeline</div>
+  val template =
+    """<div>Timeline</div>
     |<div>
     |{{#tweets}}
     |<div>
@@ -48,8 +49,8 @@ package object benchmark {
     |{{/tweets}}
     |</div>""".stripMargin
 
-
-  val dataJson = """
+  val dataJson =
+    """
 {
   "in_reply_to_status_id": null,
   "possibly_sensitive": false,

@@ -26,10 +26,10 @@ object imports {
 
   object mustache {
     def expand(t: Template): Context => (Context, String) =
-      yamusca.expand.render(t)_
+      yamusca.expand.render(t) _
 
     def render(t: Template): Context => String =
-      yamusca.expand.renderResult(t)_
+      yamusca.expand.renderResult(t) _
 
     def renderTo(t: Template)(f: String => Unit): Context => Unit =
       yamusca.expand.renderTo(t)(_, f)

@@ -12,7 +12,7 @@ trait syntax {
 
     def unsafeRender(templ: String)(implicit c: ValueConverter[A]): String =
       parse(templ) match {
-        case Right(t) => render(t)
+        case Right(t)  => render(t)
         case Left(err) => sys.error(s"Error in template: $err")
       }
 
