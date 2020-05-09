@@ -14,10 +14,26 @@ object expand {
     (next, b.toString)
   }
 
+  def renderWithMissingKeys(
+      t: Template
+  )(c: Context)(implicit r: Expand[Template]): (List[String], Context, String) = {
+    val (next, v) = render(t)(c :: MissingKeysContext(Nil))
+    val ctx       = next.head.getOrElse(next)
+    next.tail match {
+      case Some(MissingKeysContext(ks)) => (ks, ctx, v)
+      case _                            => (Nil, ctx, v)
+    }
+  }
+
   def renderTo(
       t: Template
   )(c: Context, f: String => Unit)(implicit r: Expand[Template]): Unit =
     r(f)(t).result(c)
+
+  private case class MissingKeysContext(names: List[String]) extends Context {
+    def find(key: String): (Context, Option[Value]) =
+      (MissingKeysContext(key :: names), None)
+  }
 
   trait Expand[T] {
     def apply(consume: String => Unit)(e: T): Find[Unit]

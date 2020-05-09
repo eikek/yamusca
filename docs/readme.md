@@ -77,11 +77,13 @@ implementation for a case class. It requires that there are
 and it enriches all types that implement `ValueConverter` with three
 methods:
 
--   `asMustacheValue` creates the `Value`
--   `render(t: Template)` renders the given template using the current
-    value as `Context` which is derived by calling `asMustacheValue`
--   `unsafeRender(template: String)` same as `render` but parses the
-    string first, throwing exceptions on parse errors
+- `asMustacheValue` creates the `Value`
+- `asContext` as a shortcut for `asMustacheValue.asContext`
+- `render(t: Template)` renders the given template using the current
+  value as `Context` which is derived by calling `asMustacheValue`
+- `unsafeRender(template: String)` same as `render` but parses the
+  string first, throwing exceptions on parse errors
+
 
 Parsing and expanding
 ---------------------
@@ -89,7 +91,6 @@ Parsing and expanding
 In order to parse a string into a template, you can use `parse`:
 
 ```scala mdoc
-import yamusca.imports._
 import yamusca.parser.ParseInput
 
 val te = mustache.parse("hello {{name}}!")
@@ -187,3 +188,29 @@ structure, so it is easy to wrap it in the `Context` trait. Using
 `mustache.expand` returns the final `Context` value together with the
 rendered template; while `mustache.render` discards the final context
 and only returns the rendered template.
+
+
+Collect missing keys
+--------------------
+
+By default, if the context doesn't contain a value requested by the
+template, it renders nothing. In order to know, whether the context
+did provide all necessary data for rendering the template, one can
+check afterwards if there were failed lookups.
+
+```scala mdoc
+val templateData = Data("John", List("one", "two"))
+mustache.expandWithMissingKeys(
+  mustache"Hello {{firstname}} {{name}}, items: {{#items}} - {{.}}, {{/items}}."
+)(templateData.asContext)
+```
+
+This version of `expand` additionally returns a list of all keys used
+in the template, where the context didn't provide any value. It is
+empty if all keys could be resolved.
+
+```scala mdoc
+mustache.expandWithMissingKeys(
+  mustache"Hello {{name}}, items: {{#items}} - {{.}}, {{/items}}."
+)(templateData.asContext)
+```

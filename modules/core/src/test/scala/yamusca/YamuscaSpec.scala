@@ -30,6 +30,15 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
     c2 should be(sc)
   }
 
+  it should "collect missing keys" in {
+    val t                 = mustache.parse("{{#a}}hello {{name}}{{/a}}").toOption.get
+    val in                = Context("a" -> Value.of(true))
+    val (missing, ctx, v) = mustache.expandWithMissingKeys(t)(in)
+    missing should be(List("name"))
+    ctx should be(in)
+    v should be("hello ")
+  }
+
   "template" should "render literals" in {
     val t = Template(Literal("Hello"), Literal(" "), Literal("world!"))
     t.renderResult(Context.empty) should be("Hello world!")

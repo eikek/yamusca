@@ -28,6 +28,9 @@ object imports {
     def expand(t: Template): Context => (Context, String) =
       yamusca.expand.render(t) _
 
+    def expandWithMissingKeys(t: Template): Context => (List[String], Context, String) =
+      yamusca.expand.renderWithMissingKeys(t) _
+
     def render(t: Template): Context => String =
       yamusca.expand.renderResult(t) _
 

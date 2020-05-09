@@ -6,17 +6,17 @@ object context {
 
   trait Context {
     def find(key: String): (Context, Option[Value])
+
+    /** Prepend the given context to this one. */
     def ::(head: Context): Context = Context.prepend(head, this)
 
-    def tail: Context =
-      this match {
-        case c: StackedContext =>
-          c.rest match {
-            case Nil       => Context.empty
-            case a :: rest => StackedContext(a, rest)
-          }
-        case _ => this
-      }
+    /** If stacked, removes the head context and returns the rest. */
+    def tail: Option[Context] =
+      None
+
+    /** If stacked returns the head context */
+    def head: Option[Context] =
+      None
   }
 
   private case class StackedContext(first: Context, rest: List[Context]) extends Context {
@@ -39,6 +39,16 @@ object context {
 
       loop(first :: rest, Vector.empty)
     }
+
+    override def head: Option[Context] =
+      Some(first)
+
+    override def tail: Option[Context] =
+      rest match {
+        case Nil      => None
+        case a :: Nil => Some(a)
+        case a :: as  => Some(StackedContext(a, as))
+      }
   }
 
   object Context {
@@ -137,7 +147,7 @@ object context {
       for {
         _ <- Find.modify(c => head :: c)
         v <- self
-        _ <- Find.modify(_.tail)
+        _ <- Find.modify(c => c.tail.getOrElse(c))
       } yield v
   }
 
