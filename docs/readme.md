@@ -31,7 +31,7 @@ Using [sbt](http://scala-sbt.org):
 
 ``` sbt
 libraryDependencies ++= Seq(
-  "com.github.eikek" %% "yamusca-core" % "0.5.1"
+  "com.github.eikek" %% "yamusca-core" % "@VERSION@"
 )
 ```
 

@@ -31,7 +31,7 @@ Using [sbt](http://scala-sbt.org):
 
 ``` sbt
 libraryDependencies ++= Seq(
-  "com.github.eikek" %% "yamusca-core" % "0.5.1"
+  "com.github.eikek" %% "yamusca-core" % "0.6.2"
 )
 ```
 
@@ -44,7 +44,7 @@ Simple Example
 import yamusca.imports._
 
 val data = Context("name" -> Value.of("Eike"), "items" -> Value.fromSeq( List("one", "two").map(Value.of) ))
-// data: Context = yamusca.context$Context$$anon$2@f96e8e9
+// data: Context = yamusca.context$Context$$anon$2@6d881cea
 
 val templ = mustache.parse("Hello {{name}}, items: {{#items}} - {{.}}{{^-last}}, {{/-last}}{{/items}}.")
 // templ: Either[(yamusca.parser.ParseInput, String), Template] = Right(
