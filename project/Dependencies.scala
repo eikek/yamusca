@@ -6,7 +6,7 @@ object Dependencies {
   val scalaVersion212 = "2.12.11"
   val scalaTestVersion = "3.1.2"
   val circeVersion = "0.13.0"
-  val scalateVersion = "1.9.5"
+  val scalateVersion = "1.9.6"
 
   // https://github.com/scalatest/scalatest
   // ASL 2.0
