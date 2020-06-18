@@ -18,7 +18,7 @@ object ValueConverter {
       def apply(a: A) = f(a)
     }
 
-  /** A `ValueConverter` that calls `toString` on the input value.*/
+  /** A `ValueConverter` that calls `toString` on the input value. */
   def toDefaultString[A]: ValueConverter[A] =
     of(a => Value.fromString(a.toString))
 
