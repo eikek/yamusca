@@ -1,8 +1,11 @@
 yamusca
 =======
 
-<a href="https://travis-ci.org/eikek/yamusca"><img src="https://travis-ci.org/eikek/yamusca.svg"></a>
-<a href="https://maven-badges.herokuapp.com/maven-central/com.github.eikek/yamusca-core_2.12"><img src="https://img.shields.io/maven-central/v/com.github.eikek/yamusca-core_2.12.svg"></a>
+[![Build Status](https://img.shields.io/travis/eikek/yamusca/master?style=flat-square)](https://travis-ci.org/eikek/yamusca)
+[![Scala Steward badge](https://img.shields.io/badge/Scala_Steward-helping-blue.svg?style=flat-square&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAMAAAARSr4IAAAAVFBMVEUAAACHjojlOy5NWlrKzcYRKjGFjIbp293YycuLa3pYY2LSqql4f3pCUFTgSjNodYRmcXUsPD/NTTbjRS+2jomhgnzNc223cGvZS0HaSD0XLjbaSjElhIr+AAAAAXRSTlMAQObYZgAAAHlJREFUCNdNyosOwyAIhWHAQS1Vt7a77/3fcxxdmv0xwmckutAR1nkm4ggbyEcg/wWmlGLDAA3oL50xi6fk5ffZ3E2E3QfZDCcCN2YtbEWZt+Drc6u6rlqv7Uk0LdKqqr5rk2UCRXOk0vmQKGfc94nOJyQjouF9H/wCc9gECEYfONoAAAAASUVORK5CYII=)](https://scala-steward.org)
+[![License](https://img.shields.io/github/license/eikek/yamusca.svg?style=flat-square&color=steelblue)](https://github.com/eikek/yamusca/blob/master/LICENSE.txt)
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.eikek/yamusca-core_2.13?color=blue&style=flat-square)](https://search.maven.org/artifact/com.github.eikek/yamusca-core_2.13)
+
 
 Yet another mustache parser/renderer for scala.
 
