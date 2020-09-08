@@ -36,8 +36,8 @@ trait Parsers {
     }
   }
 
-  val newLine: Parser[String] = (consume('\r').opt ~ consume('\n')).map {
-    case (r, n) => if (r.isDefined) "\r\n" else "\n"
+  val newLine: Parser[String] = (consume('\r').opt ~ consume('\n')).map { case (r, n) =>
+    if (r.isDefined) "\r\n" else "\n"
   }
 
   def consumeUntil(s: String): Parser[String] = { in =>

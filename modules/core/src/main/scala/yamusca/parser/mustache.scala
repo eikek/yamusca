@@ -79,9 +79,8 @@ object mustache extends Parsers {
   }
 
   val parseComment: Parser[Comment] =
-    standaloneOr(parseTag(_ == '!').cut).map {
-      case (_, _, msg) =>
-        Comment(msg)
+    standaloneOr(parseTag(_ == '!').cut).map { case (_, _, msg) =>
+      Comment(msg)
     }
 
   val parseStartSection: Parser[(Boolean, String)] =
@@ -124,11 +123,10 @@ object mustache extends Parsers {
   }
 
   val parseSection: Parser[Section] =
-    parseStartSection.cut.flatMap {
-      case (inverse, name) =>
-        consumeUntilEndSection(name)
-          .emap(in => parseTemplate(in).left.map(_._2).map(_._2))
-          .map(t => Section(name, t.els, inverse))
+    parseStartSection.cut.flatMap { case (inverse, name) =>
+      consumeUntilEndSection(name)
+        .emap(in => parseTemplate(in).left.map(_._2).map(_._2))
+        .map(t => Section(name, t.els, inverse))
     }
 
   lazy val parseElement: Parser[Element] =
