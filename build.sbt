@@ -85,7 +85,9 @@ lazy val noPublish = Seq(
   publishArtifact := false
 )
 
-lazy val macros = project.in(file("modules/macros")).
+lazy val macros = crossProject(JSPlatform, JVMPlatform).
+  crossType(CrossType.Pure).
+  in(file("modules/macros")).
   settings(commonSettings).
   settings(publishSettings).
   settings(
@@ -95,7 +97,12 @@ lazy val macros = project.in(file("modules/macros")).
       Dependencies.scalaReflect(scalaVersion.value)
     )
 
-lazy val core = (project in file("modules/core")).
+lazy val macrosJVM = macros.jvm
+lazy val macrosJS = macros.js
+
+lazy val core = crossProject(JSPlatform, JVMPlatform).
+  crossType(CrossType.Pure).
+  in(file("modules/core")).
   settings(commonSettings).
   settings(publishSettings).
   settings(
@@ -106,7 +113,12 @@ lazy val core = (project in file("modules/core")).
   ).
   dependsOn(macros)
 
-lazy val circe = project.in(file("modules/circe")).
+lazy val coreJVM = core.jvm
+lazy val coreJS = core.js
+
+lazy val circe = crossProject(JSPlatform, JVMPlatform).
+  crossType(CrossType.Pure).
+  in(file("modules/circe")).
   settings(commonSettings).
   settings(publishSettings).
   settings(
@@ -117,6 +129,9 @@ lazy val circe = project.in(file("modules/circe")).
       (Dependencies.scalatest ++ Dependencies.circeGeneric).map(_ % Test)
     ).
   dependsOn(core)
+
+lazy val circeJVM = circe.jvm
+lazy val circeJS = circe.js
 
 lazy val benchmark = project.in(file("modules/benchmark")).
   enablePlugins(JmhPlugin).
@@ -130,7 +145,7 @@ lazy val benchmark = project.in(file("modules/benchmark")).
       Dependencies.circeGeneric ++
       Dependencies.scalateCore
   ).
-  dependsOn(core, circe)
+  dependsOn(coreJVM, circeJVM)
 
 lazy val readme = project
   .in(file("modules/readme"))
@@ -155,11 +170,11 @@ lazy val readme = project
       ()
     }
   )
-  .dependsOn(core, circe)
+  .dependsOn(coreJVM, circeJVM)
 
 lazy val root = project.in(file(".")).
   settings(commonSettings).
   settings(noPublish).
-  aggregate(core, macros, circe, benchmark)
+  aggregate(coreJVM, coreJS, macrosJVM, macrosJS, circeJVM, circeJS, benchmark)
 
 addCommandAlias("bench-parse-quick", ";project benchmark ;jmh:run -f1 -wi 2 -i 2 .*ParserBenchmark")
