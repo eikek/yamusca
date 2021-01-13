@@ -6,7 +6,9 @@ yamusca
 <a href="https://github.com/eikek/yamusca/blob/master/LICENSE.txt" title="License"><img src="https://img.shields.io/github/license/eikek/yamusca.svg?style=flat-square&color=steelblue"></a>
 <a href="https://index.scala-lang.org/eikek/yamusca/yamusca-core" title="Scaladex"><img src="https://index.scala-lang.org/eikek/yamusca/yamusca-core/latest.svg?color=blue&style=flat-square"></a>
 
-Yet another mustache parser/renderer for scala.
+Yet another mustache parser/renderer for scala. It is published for
+scala 2.12 and 2.13, since version 0.8.0 it is also built for scalajs.
+
 
 Goals
 -----

@@ -1,13 +1,14 @@
 yamusca
 =======
 
-[![Build Status](https://img.shields.io/travis/eikek/yamusca/master?style=flat-square)](https://travis-ci.org/eikek/yamusca)
-[![Scala Steward badge](https://img.shields.io/badge/Scala_Steward-helping-blue.svg?style=flat-square&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAMAAAARSr4IAAAAVFBMVEUAAACHjojlOy5NWlrKzcYRKjGFjIbp293YycuLa3pYY2LSqql4f3pCUFTgSjNodYRmcXUsPD/NTTbjRS+2jomhgnzNc223cGvZS0HaSD0XLjbaSjElhIr+AAAAAXRSTlMAQObYZgAAAHlJREFUCNdNyosOwyAIhWHAQS1Vt7a77/3fcxxdmv0xwmckutAR1nkm4ggbyEcg/wWmlGLDAA3oL50xi6fk5ffZ3E2E3QfZDCcCN2YtbEWZt+Drc6u6rlqv7Uk0LdKqqr5rk2UCRXOk0vmQKGfc94nOJyQjouF9H/wCc9gECEYfONoAAAAASUVORK5CYII=)](https://scala-steward.org)
-[![License](https://img.shields.io/github/license/eikek/yamusca.svg?style=flat-square&color=steelblue)](https://github.com/eikek/yamusca/blob/master/LICENSE.txt)
-[![Maven Central](https://img.shields.io/maven-central/v/com.github.eikek/yamusca-core_2.13?color=blue&style=flat-square)](https://search.maven.org/artifact/com.github.eikek/yamusca-core_2.13)
+<a href="https://travis-ci.org/eikek/yamusca" title="Build Status"><img src="https://travis-ci.org/eikek/yamusca.svg"></a>
+<a href="https://scala-steward.org" title="Scala Steward badge"><img src="https://img.shields.io/badge/Scala_Steward-helping-blue.svg?style=flat-square&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAMAAAARSr4IAAAAVFBMVEUAAACHjojlOy5NWlrKzcYRKjGFjIbp293YycuLa3pYY2LSqql4f3pCUFTgSjNodYRmcXUsPD/NTTbjRS+2jomhgnzNc223cGvZS0HaSD0XLjbaSjElhIr+AAAAAXRSTlMAQObYZgAAAHlJREFUCNdNyosOwyAIhWHAQS1Vt7a77/3fcxxdmv0xwmckutAR1nkm4ggbyEcg/wWmlGLDAA3oL50xi6fk5ffZ3E2E3QfZDCcCN2YtbEWZt+Drc6u6rlqv7Uk0LdKqqr5rk2UCRXOk0vmQKGfc94nOJyQjouF9H/wCc9gECEYfONoAAAAASUVORK5CYII="></a>
+<a href="https://github.com/eikek/yamusca/blob/master/LICENSE.txt" title="License"><img src="https://img.shields.io/github/license/eikek/yamusca.svg?style=flat-square&color=steelblue"></a>
+<a href="https://index.scala-lang.org/eikek/yamusca/yamusca-core" title="Scaladex"><img src="https://index.scala-lang.org/eikek/yamusca/yamusca-core/latest.svg?color=blue&style=flat-square"></a>
 
+Yet another mustache parser/renderer for scala. It is published for
+scala 2.12 and 2.13, since version 0.8.0 it is also built for scalajs.
 
-Yet another mustache parser/renderer for scala.
 
 Goals
 -----
@@ -34,7 +35,7 @@ Using [sbt](http://scala-sbt.org):
 
 ``` sbt
 libraryDependencies ++= Seq(
-  "com.github.eikek" %% "yamusca-core" % "0.6.2"
+  "com.github.eikek" %% "yamusca-core" % "0.8.0"
 )
 ```
 
@@ -47,25 +48,29 @@ Simple Example
 import yamusca.imports._
 
 val data = Context("name" -> Value.of("Eike"), "items" -> Value.fromSeq( List("one", "two").map(Value.of) ))
-// data: Context = yamusca.context$Context$$anon$2@6d881cea
+// data: Context = yamusca.context$Context$$anon$2@78be6393
 
 val templ = mustache.parse("Hello {{name}}, items: {{#items}} - {{.}}{{^-last}}, {{/-last}}{{/items}}.")
 // templ: Either[(yamusca.parser.ParseInput, String), Template] = Right(
-//   Template(
-//     Vector(
-//       Literal("Hello "),
-//       Variable("name", false),
-//       Literal(", items: "),
+//   value = Template(
+//     els = Vector(
+//       Literal(text = "Hello "),
+//       Variable(key = "name", unescape = false),
+//       Literal(text = ", items: "),
 //       Section(
-//         "items",
-//         Vector(
-//           Literal(" - "),
-//           Variable(".", false),
-//           Section("-last", Vector(Literal(", ")), true)
+//         key = "items",
+//         inner = Vector(
+//           Literal(text = " - "),
+//           Variable(key = ".", unescape = false),
+//           Section(
+//             key = "-last",
+//             inner = Vector(Literal(text = ", ")),
+//             inverted = true
+//           )
 //         ),
-//         false
+//         inverted = false
 //       ),
-//       Literal(".")
+//       Literal(text = ".")
 //     )
 //   )
 // )
@@ -103,11 +108,13 @@ implementation for a case class. It requires that there are
 and it enriches all types that implement `ValueConverter` with three
 methods:
 
--   `asMustacheValue` creates the `Value`
--   `render(t: Template)` renders the given template using the current
-    value as `Context` which is derived by calling `asMustacheValue`
--   `unsafeRender(template: String)` same as `render` but parses the
-    string first, throwing exceptions on parse errors
+- `asMustacheValue` creates the `Value`
+- `asContext` as a shortcut for `asMustacheValue.asContext`
+- `render(t: Template)` renders the given template using the current
+  value as `Context` which is derived by calling `asMustacheValue`
+- `unsafeRender(template: String)` same as `render` but parses the
+  string first, throwing exceptions on parse errors
+
 
 Parsing and expanding
 ---------------------
@@ -115,12 +122,17 @@ Parsing and expanding
 In order to parse a string into a template, you can use `parse`:
 
 ```scala
-import yamusca.imports._
 import yamusca.parser.ParseInput
 
 val te = mustache.parse("hello {{name}}!")
 // te: Either[(ParseInput, String), Template] = Right(
-//   Template(Vector(Literal("hello "), Variable("name", false), Literal("!")))
+//   value = Template(
+//     els = Vector(
+//       Literal(text = "hello "),
+//       Variable(key = "name", unescape = false),
+//       Literal(text = "!")
+//     )
+//   )
 // )
 ```
 
@@ -131,7 +143,11 @@ throw exceptions on parsing errors:
 ```scala
 val t = mustache"hello {{name}}!"
 // t: Template = Template(
-//   Vector(Literal("hello "), Variable("name", false), Literal("!"))
+//   els = Vector(
+//     Literal(text = "hello "),
+//     Variable(key = "name", unescape = false),
+//     Literal(text = "!")
+//   )
 // )
 ```
 
@@ -185,14 +201,14 @@ val template1 = mustache.parse(
      |Size: {{size}}""".stripMargin
 ).toOption.get
 // template1: Template = Template(
-//   Vector(
-//     Literal("Name: "),
-//     Variable("name", false),
+//   els = Vector(
+//     Literal(text = "Name: "),
+//     Variable(key = "name", unescape = false),
 //     Literal(
-//       """
+//       text = """
 // Size: """
 //     ),
-//     Variable("size", false)
+//     Variable(key = "size", unescape = false)
 //   )
 // )
 val template2 = mustache.parse(
@@ -202,24 +218,24 @@ val template2 = mustache.parse(
      |Size: {{size}}""".stripMargin
 ).toOption.get
 // template2: Template = Template(
-//   Vector(
-//     Literal("Name: "),
-//     Variable("name", false),
+//   els = Vector(
+//     Literal(text = "Name: "),
+//     Variable(key = "name", unescape = false),
 //     Literal(
-//       """
+//       text = """
 // Sha: """
 //     ),
-//     Variable("sha", false),
+//     Variable(key = "sha", unescape = false),
 //     Literal(
-//       """
+//       text = """
 // Sha again: """
 //     ),
-//     Variable("sha", false),
+//     Variable(key = "sha", unescape = false),
 //     Literal(
-//       """
+//       text = """
 // Size: """
 //     ),
-//     Variable("size", false)
+//     Variable(key = "size", unescape = false)
 //   )
 // )
 
@@ -237,12 +253,12 @@ def main(n: Int, f: Path): Unit = {
 
 main(1, Paths.get("build.sbt"))
 // (FileData(None,build.sbt),Name: build.sbt
-// Size: 4571)
+// Size: 4981)
 main(2, Paths.get("build.sbt"))
-// (FileData(Some(e45c6ddbc9f8866d6460ff5863935e49c8c39c881ab36424535425646856a7),build.sbt),Name: build.sbt
-// Sha: e45c6ddbc9f8866d6460ff5863935e49c8c39c881ab36424535425646856a7
-// Sha again: e45c6ddbc9f8866d6460ff5863935e49c8c39c881ab36424535425646856a7
-// Size: 4571)
+// (FileData(Some(3b6e2cc1ecf48ee52693557cb37830321d8bc4318f3b8abef41938ee3),build.sbt),Name: build.sbt
+// Sha: 3b6e2cc1ecf48ee52693557cb37830321d8bc4318f3b8abef41938ee3
+// Sha again: 3b6e2cc1ecf48ee52693557cb37830321d8bc4318f3b8abef41938ee3
+// Size: 4981)
 ```
 
 The `FileData` case class implements the
@@ -259,3 +275,40 @@ structure, so it is easy to wrap it in the `Context` trait. Using
 `mustache.expand` returns the final `Context` value together with the
 rendered template; while `mustache.render` discards the final context
 and only returns the rendered template.
+
+
+Collect missing keys
+--------------------
+
+By default, if the context doesn't contain a value requested by the
+template, it renders nothing. In order to know, whether the context
+did provide all necessary data for rendering the template, one can
+check afterwards if there were failed lookups.
+
+```scala
+val templateData = Data("John", List("one", "two"))
+// templateData: Data = Data(name = "John", items = List("one", "two"))
+mustache.expandWithMissingKeys(
+  mustache"Hello {{firstname}} {{name}}, items: {{#items}} - {{.}}, {{/items}}."
+)(templateData.asContext)
+// res5: (List[String], Context, String) = (
+//   List("firstname"),
+//   yamusca.context$Context$$anon$3@5fd5c93b,
+//   "Hello  John, items:  - one,  - two, ."
+// )
+```
+
+This version of `expand` additionally returns a list of all keys used
+in the template, where the context didn't provide any value. It is
+empty if all keys could be resolved.
+
+```scala
+mustache.expandWithMissingKeys(
+  mustache"Hello {{name}}, items: {{#items}} - {{.}}, {{/items}}."
+)(templateData.asContext)
+// res6: (List[String], Context, String) = (
+//   List(),
+//   yamusca.context$Context$$anon$3@6d6ed893,
+//   "Hello John, items:  - one,  - two, ."
+// )
+```
