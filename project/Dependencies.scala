@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
 
-  val scalaVersion213 = "2.13.2"
+  val scalaVersion213 = "2.13.5"
   val scalaVersion212 = "2.12.11"
   val scalaTestVersion = "3.2.4"
   val circeVersion = "0.13.0"
