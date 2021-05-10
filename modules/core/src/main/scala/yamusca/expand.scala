@@ -9,8 +9,8 @@ object expand {
     render(t)(c)._2
 
   def render(t: Template)(c: Context)(implicit r: Expand[Template]): (Context, String) = {
-    val b         = new StringBuilder
-    val (next, _) = r(b append _)(t).run(c)
+    val b         = new Buffer
+    val (next, _) = r(b.append(_))(t).run(c)
     (next, b.toString)
   }
 
@@ -39,7 +39,7 @@ object expand {
     def apply(consume: String => Unit)(e: T): Find[Unit]
     def asString(e: T): Find[String] =
       Find { ctx =>
-        val buf       = new StringBuilder
+        val buf       = new Buffer
         val (next, _) = apply(buf append _)(e).run(ctx)
         (next, buf.toString)
       }
@@ -59,7 +59,7 @@ object expand {
 
     implicit val literalExpand: Expand[Literal] = Expand(e => Find.unit(e.text))
 
-    implicit val commentExpand: Expand[Comment] = Expand(e => Find.unit(""))
+    implicit val commentExpand: Expand[Comment] = Expand(_ => Find.unit(""))
 
     implicit val variableExpand: Expand[Variable] = Expand {
       case Variable(key, unescape) =>
@@ -130,5 +130,14 @@ object expand {
         def apply(consume: String => Unit)(t: Template): Find[Unit] =
           t.els.map(r(consume)).foldLeft(Find.unit(()))(_ andThen _)
       }
+  }
+
+  private final class Buffer(val buffer: StringBuilder = new StringBuilder()) {
+    def append(str: String): Unit = {
+      buffer.append(str)
+      ()
+    }
+
+    override def toString() = buffer.toString()
   }
 }

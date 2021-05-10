@@ -104,7 +104,7 @@ object mustache extends Parsers {
       pin.splitAtNext(delim) match {
         case Some((left, right)) if stop(right.dropLeft(delim.length)) =>
           standaloneOr(parseEndSection)(right) match {
-            case Right((next, n)) =>
+            case Right((next, _)) =>
               Some((in.copy(end = left.end), next))
 
             case _ =>

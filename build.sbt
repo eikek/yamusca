@@ -1,40 +1,54 @@
-import xerial.sbt.Sonatype._
-import ReleaseTransformations._
-
-val scalacOpts: Seq[String] = Seq(
-  "-encoding", "UTF-8",
-  "-Xfatal-warnings",
-  "-deprecation",
-  "-feature",
-  "-unchecked",
-  "-language:higherKinds",
-  "-Xlint",
-  "-Yno-adapted-args",
-  "-Ywarn-dead-code",
-  "-Ywarn-numeric-widen",
-  "-Ywarn-unused-import"
+addCommandAlias("ci", "; lint; +test; +publishLocal")
+addCommandAlias(
+  "lint",
+  "; scalafmtSbtCheck; scalafmtCheckAll; Compile/scalafix --check; Test/scalafix --check"
 )
+addCommandAlias("fix", "; Compile/scalafix; Test/scalafix; scalafmtSbt; scalafmtAll")
+
+addCommandAlias("bench-parse-quick", ";project benchmark ;jmh:run -f1 -wi 2 -i 2 .*ParserBenchmark")
+
 
 val updateReadme = inputKey[Unit]("Update readme")
+
+def makeScalacOptions(binaryVersion: String) =
+    Seq(
+      "-feature",
+      "-deprecation",
+      "-unchecked",
+      "-encoding",
+      "UTF-8",
+      "-language:higherKinds"
+    ) ++
+      (if (binaryVersion.startsWith("2.12"))
+         List(
+           "-Xfatal-warnings", // fail when there are warnings
+           "-Xlint",
+           "-Yno-adapted-args",
+           "-Ywarn-dead-code",
+           "-Ywarn-unused",
+           "-Ypartial-unification",
+           "-Ywarn-value-discard"
+         )
+       else if (binaryVersion.startsWith("2.13"))
+         List("-Werror", "-Wdead-code", "-Wunused", "-Wvalue-discard")
+       else
+         Nil)
+
 
 lazy val commonSettings = Seq(
   name := "yamusca",
   organization := "com.github.eikek",
   licenses := Seq("MIT" -> url("http://spdx.org/licenses/MIT")),
-  homepage := Some(url("https://github.com/eikek")),
-  scalaVersion := Dependencies.scalaVersion213,
+  homepage := Some(url("https://github.com/eikek/yamusca")),
+  versionScheme := Some("early-semver"),
+  scalaVersion := Dependencies.Version.scalaVersion213,
   crossScalaVersions := Seq(
-    Dependencies.scalaVersion212,
-    Dependencies.scalaVersion213),
-  scalacOptions := {
-    if (scalaBinaryVersion.value.startsWith("2.13")) {
-      scalacOpts.filter(o => o != "-Yno-adapted-args" && o != "-Ywarn-unused-import")
-    } else {
-      scalacOpts
-    }
-  },
-  scalacOptions in (Compile, console) := Seq(),
-  scalacOptions in (Test, console) := (scalacOptions in (Compile, console)).value,
+    Dependencies.Version.scalaVersion212,
+    Dependencies.Version.scalaVersion213),
+  scalacOptions ++= makeScalacOptions(scalaBinaryVersion.value),
+  Test / scalacOptions := (Compile/scalacOptions).value.filter(e => !e.endsWith("value-discard")),
+  Compile / console/ scalacOptions := Seq(),
+  Test / console/ scalacOptions := Seq(),
   initialCommands := """
     import yamusca.imports._
     import yamusca.implicits._
@@ -43,7 +57,6 @@ lazy val commonSettings = Seq(
 ) ++ publishSettings
 
 lazy val publishSettings = Seq(
-  publishMavenStyle := true,
   scmInfo := Some(
     ScmInfo(
       url("https://github.com/eikek/yamusca.git"),
@@ -57,26 +70,7 @@ lazy val publishSettings = Seq(
       url = url("https://github.com/eikek"),
       email = ""
     )
-  ),
-  publishTo := sonatypePublishToBundle.value,
-  publishArtifact in Test := false,
-  releaseCrossBuild := true,
-  releaseProcess := Seq[ReleaseStep](
-    checkSnapshotDependencies,
-    inquireVersions,
-    runClean,
-    runTest,
-    setReleaseVersion,
-    commitReleaseVersion,
-    tagRelease,
-    // For non cross-build projects, use releaseStepCommand("publishSigned")
-    releaseStepCommandAndRemaining("+publishSigned"),
-    releaseStepCommand("sonatypeBundleRelease"),
-    setNextVersion,
-    commitNextVersion,
-    pushChanges
-  ),
-  sonatypeProjectHosting := Some(GitHubHosting("eikek", "yamusca", "eike.kettner@posteo.de"))
+  )
 )
 
 lazy val noPublish = Seq(
@@ -85,11 +79,19 @@ lazy val noPublish = Seq(
   publishArtifact := false
 )
 
+val scalafixSettings = Seq(
+  semanticdbEnabled := true,                        // enable SemanticDB
+  semanticdbVersion := scalafixSemanticdb.revision, // use Scalafix compatible version
+  ThisBuild / scalafixDependencies ++= Dependencies.organizeImports
+)
+
+
 lazy val macros = crossProject(JSPlatform, JVMPlatform).
   crossType(CrossType.Pure).
   in(file("modules/macros")).
   settings(commonSettings).
   settings(publishSettings).
+  settings(scalafixSettings).
   settings(
     name := "yamusca-macros",
     incOptions := incOptions.value.withLogRecompileOnMacro(false),
@@ -105,6 +107,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform).
   in(file("modules/core")).
   settings(commonSettings).
   settings(publishSettings).
+  settings(scalafixSettings).
   settings(
     name := "yamusca-core",
     libraryDependencies ++=
@@ -121,6 +124,7 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform).
   in(file("modules/circe")).
   settings(commonSettings).
   settings(publishSettings).
+  settings(scalafixSettings).
   settings(
     name := "yamusca-circe",
     description := "Provide value converter for circes json values",
@@ -137,8 +141,10 @@ lazy val benchmark = project.in(file("modules/benchmark")).
   enablePlugins(JmhPlugin).
   settings(commonSettings).
   settings(noPublish).
+  settings(scalafixSettings).
   settings(
     name := "yamusca-benchmark",
+    scalacOptions := makeScalacOptions(scalaBinaryVersion.value).filter(e => !e.endsWith("value-discard")),
     libraryDependencies ++=
       Dependencies.mustacheJava ++
       Dependencies.circeParser ++
@@ -176,5 +182,3 @@ lazy val root = project.in(file(".")).
   settings(commonSettings).
   settings(noPublish).
   aggregate(coreJVM, coreJS, macrosJVM, macrosJS, circeJVM, circeJS, benchmark)
-
-addCommandAlias("bench-parse-quick", ";project benchmark ;jmh:run -f1 -wi 2 -i 2 .*ParserBenchmark")

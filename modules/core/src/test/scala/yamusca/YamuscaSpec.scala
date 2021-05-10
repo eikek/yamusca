@@ -153,7 +153,7 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
     val t =
       Template(Section("colors", Seq(Literal("- "), Variable("name"), Literal("\n"))))
     val context = Context(
-      "colors" -> Value.lambda(s => Expand.variableExpand.asString(Variable("name"))),
+      "colors" -> Value.lambda(_ => Expand.variableExpand.asString(Variable("name"))),
       "name"   -> "Willy".value
     )
     t.renderResult(context) should be("Willy")
