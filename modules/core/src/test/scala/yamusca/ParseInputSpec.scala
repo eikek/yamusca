@@ -1,8 +1,8 @@
 package yamusca
 
-import yamusca.parser._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import yamusca.parser._
 
 class ParseInputSpec extends AnyFlatSpec with Matchers {
 

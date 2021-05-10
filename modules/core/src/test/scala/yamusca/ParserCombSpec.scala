@@ -1,11 +1,12 @@
 package yamusca
 
 import java.util.concurrent.atomic.AtomicBoolean
+
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import yamusca.data._
 import yamusca.parser._
 import yamusca.parser.mustache._
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 
 class ParserCombSpec extends AnyFlatSpec with Matchers {
 

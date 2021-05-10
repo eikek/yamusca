@@ -1,13 +1,15 @@
 package yamusca.benchmark
 
 import java.io.{StringReader, StringWriter}
-import org.openjdk.jmh.annotations._
+
 import com.github.mustachejava._
-import io.circe._, io.circe.parser._
+import io.circe._
+import io.circe.parser._
 import org.fusesource.scalate.mustache.MustacheParser
-import yamusca.imports._
+import org.openjdk.jmh.annotations._
 import yamusca.circe._
 import yamusca.implicits._
+import yamusca.imports._
 
 @State(Scope.Thread)
 class RenderBenchmark {

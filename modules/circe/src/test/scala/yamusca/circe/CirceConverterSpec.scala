@@ -1,9 +1,10 @@
 package yamusca.circe
 
-import io.circe.generic.auto._, io.circe.syntax._
-import yamusca.implicits._
+import io.circe.generic.auto._
+import io.circe.syntax._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import yamusca.implicits._
 
 class CirceConverterSpec extends AnyFlatSpec with Matchers {
 

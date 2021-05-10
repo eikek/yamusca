@@ -1,7 +1,7 @@
 package yamusca
 
-import yamusca.data._
 import yamusca.context._
+import yamusca.data._
 
 object expand {
 
@@ -132,7 +132,7 @@ object expand {
       }
   }
 
-  private final class Buffer(val buffer: StringBuilder = new StringBuilder()) {
+  final private class Buffer(val buffer: StringBuilder = new StringBuilder()) {
     def append(str: String): Unit = {
       buffer.append(str)
       ()
