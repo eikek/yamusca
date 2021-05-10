@@ -1,8 +1,8 @@
 package yamusca
 
 import io.circe._
-import yamusca.imports._
 import yamusca.converter.instances.seqValueConverter
+import yamusca.imports._
 
 package object circe {
 

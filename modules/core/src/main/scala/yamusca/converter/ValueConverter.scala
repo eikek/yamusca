@@ -2,7 +2,8 @@ package yamusca.converter
 
 import java.util.Locale
 
-import language.experimental.{macros => smacros}
+import scala.language.experimental.{macros => smacros}
+
 import yamusca.context._
 import yamusca.macros.ValueConverterMacros
 

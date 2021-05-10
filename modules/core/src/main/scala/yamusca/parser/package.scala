@@ -40,7 +40,7 @@ package object parser {
 
     def or[B >: A](other: Parser[B]): Parser[B] = { in =>
       p(in) match {
-        case l @ Left((next, err)) =>
+        case l @ Left((next, _)) =>
           if (next.cutted <= in.pos) other(in)
           else l.asInstanceOf[ParseResult[B]]
         case r @ Right(_) => r

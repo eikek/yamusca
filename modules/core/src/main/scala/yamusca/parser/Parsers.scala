@@ -11,7 +11,7 @@ trait Parsers {
   def nextChar(p: Char => Boolean): Parser[Char] = { in =>
     in.charAt(0) match {
       case Some(c) if p(c) => Right((in.dropLeft(1), c))
-      case Some(c)         => Left((in, "Character not expected"))
+      case Some(_)         => Left((in, "Character not expected"))
       case None            => Left((in, "Input exhausted"))
     }
   }
@@ -36,7 +36,7 @@ trait Parsers {
     }
   }
 
-  val newLine: Parser[String] = (consume('\r').opt ~ consume('\n')).map { case (r, n) =>
+  val newLine: Parser[String] = (consume('\r').opt ~ consume('\n')).map { case (r, _) =>
     if (r.isDefined) "\r\n" else "\n"
   }
 
@@ -75,7 +75,7 @@ trait Parsers {
         p(in) match {
           case Right((next, a)) =>
             go(next, result :+ a)
-          case Left((next, err)) =>
+          case Left((next, _)) =>
             Right(next -> result)
         }
 

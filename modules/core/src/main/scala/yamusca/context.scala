@@ -29,7 +29,7 @@ object context {
               case (next, v: Some[_]) =>
                 val newCtx = (tried :+ next).toList ::: rest
                 (StackedContext(newCtx.head, newCtx.tail), v)
-              case (next, v) =>
+              case (next, _) =>
                 loop(rest, tried :+ next)
             }
           case _ =>

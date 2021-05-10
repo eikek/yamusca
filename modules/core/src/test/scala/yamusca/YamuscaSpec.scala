@@ -1,12 +1,12 @@
 package yamusca
 
-import yamusca.imports._
-import yamusca.syntax._
-import yamusca.context.Find
-import yamusca.expand.Expand
-import yamusca.util._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import yamusca.context.Find
+import yamusca.expand.Expand
+import yamusca.imports._
+import yamusca.syntax._
+import yamusca.util._
 
 class YamuscaSpec extends AnyFlatSpec with Matchers {
 
@@ -153,7 +153,7 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
     val t =
       Template(Section("colors", Seq(Literal("- "), Variable("name"), Literal("\n"))))
     val context = Context(
-      "colors" -> Value.lambda(s => Expand.variableExpand.asString(Variable("name"))),
+      "colors" -> Value.lambda(_ => Expand.variableExpand.asString(Variable("name"))),
       "name"   -> "Willy".value
     )
     t.renderResult(context) should be("Willy")

@@ -1,9 +1,9 @@
 package yamusca.converter
 
-import yamusca.parser.parse
-import yamusca.expand
-import yamusca.data.Template
 import yamusca.context.{Context, Value}
+import yamusca.data.Template
+import yamusca.expand
+import yamusca.parser.parse
 
 trait syntax {
 

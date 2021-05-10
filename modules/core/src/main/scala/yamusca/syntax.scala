@@ -1,7 +1,7 @@
 package yamusca
 
-import yamusca.data._
 import yamusca.context._
+import yamusca.data._
 import yamusca.expand._
 
 object syntax {
