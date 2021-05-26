@@ -7,7 +7,7 @@ object Dependencies {
     val scalaVersion213  = "2.13.5"
     val scalaVersion212  = "2.12.13"
     val scalaTestVersion = "3.2.9"
-    val circeVersion     = "0.13.0"
+    val circeVersion     = "0.14.0"
     val scalateVersion   = "1.9.6"
     val organizeImports  = "0.5.0"
 
