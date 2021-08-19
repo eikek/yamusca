@@ -18,7 +18,7 @@ trait Parsers {
 
   def consume(s: String): Parser[String] = { in =>
     if (in.takeLeft(s.length).current == s) Right(in.dropLeft(s.length) -> s)
-    else Left(in                                                        -> s"Expected '$s'")
+    else Left(in -> s"Expected '$s'")
   }
 
   def consume(c: Char): Parser[Char] = { in =>

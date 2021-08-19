@@ -4,9 +4,9 @@ import yamusca.data._
 
 object mustache extends Parsers {
   def tag(d: Delim): Parser[(Delim, String)] =
-    (consume(d.start) ~ nonEmpty(consumeUntil(d.end)) ~ consume(d.end)).map({
+    (consume(d.start) ~ nonEmpty(consumeUntil(d.end)) ~ consume(d.end)).map {
       case ((_, name), _) => (d, name)
-    })
+    }
 
   val parseTag: Parser[(Delim, String)] = { in =>
     if (in.delim != Delim.default) tag(in.delim)(in)
@@ -16,7 +16,7 @@ object mustache extends Parsers {
   def parseTag(p: Char => Boolean): Parser[(Delim, Char, String)] = { in =>
     val d = in.delim
     (consume(d.start) ~ nextChar(p) ~ nonEmpty(consumeUntil(d.end)) ~ consume(d.end))
-      .map({ case (((_, c), name), _) => (d, c, name) })(in)
+      .map { case (((_, c), name), _) => (d, c, name) }(in)
   }
 
   val parseVariable: Parser[Variable] =
@@ -92,13 +92,12 @@ object mustache extends Parsers {
     }
 
   val parseEndSection: Parser[String] =
-    standaloneOr(parseTag(_ == '/')).map({ case (_, _, name) => name.trim })
+    standaloneOr(parseTag(_ == '/')).map { case (_, _, name) => name.trim }
 
   def consumeUntilEndSection(name: String): Parser[ParseInput] = { in =>
     val delim = in.delim.start + "/"
-    val stop: ParseInput => Boolean = in => {
+    val stop: ParseInput => Boolean = in =>
       (ignoreWs ~ consume(name) ~ ignoreWs ~ consume(in.delim.end))(in).isRight
-    }
     @annotation.tailrec
     def go(pin: ParseInput): Option[(ParseInput, ParseInput)] =
       pin.splitAtNext(delim) match {

@@ -93,11 +93,11 @@ object expand {
               if (v.isEmpty) expandInner
               else Find.unit(())
             case ListValue(vs) =>
-              val list = vs.zipWithIndex.map({ case (v, i) =>
+              val list = vs.zipWithIndex.map { case (v, i) =>
                 expandInner
                   .stacked(v.asContext)
                   .stacked(Context.indexContext(i, vs.size))
-              })
+              }
               list.foldLeft(Find.unit(()))(_ andThen _)
             case LambdaValue(f) =>
               f(s).map(consume)

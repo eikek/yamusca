@@ -37,12 +37,12 @@ def makeScalacOptions(binaryVersion: String) =
        Nil)
 
 lazy val commonSettings = Seq(
-  name := "yamusca",
-  organization := "com.github.eikek",
-  licenses := Seq("MIT" -> url("http://spdx.org/licenses/MIT")),
-  homepage := Some(url("https://github.com/eikek/yamusca")),
+  name          := "yamusca",
+  organization  := "com.github.eikek",
+  licenses      := Seq("MIT" -> url("http://spdx.org/licenses/MIT")),
+  homepage      := Some(url("https://github.com/eikek/yamusca")),
   versionScheme := Some("early-semver"),
-  scalaVersion := Dependencies.Version.scalaVersion213,
+  scalaVersion  := Dependencies.Version.scalaVersion213,
   crossScalaVersions := Seq(
     Dependencies.Version.scalaVersion212,
     Dependencies.Version.scalaVersion213
@@ -52,8 +52,8 @@ lazy val commonSettings = Seq(
     !e.endsWith("value-discard")
   ),
   Compile / console / scalacOptions := Seq(),
-  Test / console / scalacOptions := Seq(),
-  initialCommands := """
+  Test / console / scalacOptions    := Seq(),
+  initialCommands                   := """
     import yamusca.imports._
     import yamusca.implicits._
     import yamusca.parser.ParseInput
@@ -78,8 +78,8 @@ lazy val publishSettings = Seq(
 )
 
 lazy val noPublish = Seq(
-  publish := {},
-  publishLocal := {},
+  publish         := {},
+  publishLocal    := {},
   publishArtifact := false
 )
 
@@ -96,7 +96,7 @@ lazy val macros = crossProject(JSPlatform, JVMPlatform)
   .settings(publishSettings)
   .settings(scalafixSettings)
   .settings(
-    name := "yamusca-macros",
+    name       := "yamusca-macros",
     incOptions := incOptions.value.withLogRecompileOnMacro(false),
     libraryDependencies ++=
       Dependencies.scalaReflect(scalaVersion.value)
@@ -129,7 +129,7 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform)
   .settings(publishSettings)
   .settings(scalafixSettings)
   .settings(
-    name := "yamusca-circe",
+    name        := "yamusca-circe",
     description := "Provide value converter for circes json values",
     libraryDependencies ++=
       Dependencies.circeCore ++
