@@ -360,7 +360,7 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "allow multiple inverted sections" in {
-    val data     = Context("bool" -> Value.of(false), "two" -> Value.of("second"))
+    val data = Context("bool" -> Value.of(false), "two" -> Value.of("second"))
     val template = """|
       |{{^bool}}
       |* first

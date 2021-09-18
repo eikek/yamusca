@@ -99,7 +99,7 @@ object context {
     def fromBoolean(b: Boolean): Value                   = BoolValue(b)
     def fromSeq(vs: Seq[Value]): Value                   = ListValue(vs)
     def fromContext(ctx: Context, empty: Boolean): Value = MapValue(ctx, empty)
-    def fromMap(m: Map[String, Value])                   = fromContext(Context.fromMap(m), m.isEmpty)
+    def fromMap(m: Map[String, Value]) = fromContext(Context.fromMap(m), m.isEmpty)
 
     def of(s: String): Value                      = SimpleValue(s)
     def of(s: Option[String]): Value              = SimpleValue(s.getOrElse(""))

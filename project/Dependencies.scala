@@ -4,11 +4,11 @@ object Dependencies {
 
   object Version {
 
-    val scalaVersion213  = "2.13.6"
-    val scalaVersion212  = "2.12.13"
-    val scalaTestVersion = "3.2.9"
-    val circeVersion     = "0.13.0"
-    val scalateVersion   = "1.9.6"
+    val scalaVersion213  = "2.13.5"
+    val scalaVersion212  = "2.12.15"
+    val scalaTestVersion = "3.2.10"
+    val circeVersion     = "0.14.1"
+    val scalateVersion   = "1.9.7"
     val organizeImports  = "0.5.0"
 
   }
@@ -20,7 +20,7 @@ object Dependencies {
   )
 
   val mustacheJava = Seq(
-    "com.github.spullara.mustache.java" % "compiler" % "0.9.7"
+    "com.github.spullara.mustache.java" % "compiler" % "0.9.10"
   )
 
   // https://github.com/circe/circe

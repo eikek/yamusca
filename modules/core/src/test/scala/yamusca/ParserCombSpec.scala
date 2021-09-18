@@ -219,10 +219,9 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
 
   "repeat" should "call literal parser just once" in {
     val flag = new AtomicBoolean(false)
-    val p: Parser[Literal] = in => {
+    val p: Parser[Literal] = in =>
       if (flag.compareAndSet(false, true)) parseLiteral(in)
       else sys.error("Called more than once")
-    }
 
     repeat(p)(ParseInput("ab")).left
       .map(ex => fail(ex._2))
