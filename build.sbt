@@ -93,7 +93,6 @@ lazy val macros = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("modules/macros"))
   .settings(commonSettings)
-  .settings(publishSettings)
   .settings(scalafixSettings)
   .settings(
     name       := "yamusca-macros",
@@ -109,7 +108,6 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("modules/core"))
   .settings(commonSettings)
-  .settings(publishSettings)
   .settings(scalafixSettings)
   .settings(
     name := "yamusca-core",
@@ -126,7 +124,6 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("modules/circe"))
   .settings(commonSettings)
-  .settings(publishSettings)
   .settings(scalafixSettings)
   .settings(
     name        := "yamusca-circe",
