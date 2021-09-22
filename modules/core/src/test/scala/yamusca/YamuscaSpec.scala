@@ -31,8 +31,8 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "collect missing keys" in {
-    val t                 = mustache.parse("{{#a}}hello {{name}}{{/a}}").toOption.get
-    val in                = Context("a" -> Value.of(true))
+    val t = mustache.parse("{{#a}}hello {{name}}{{/a}}").toOption.get
+    val in = Context("a" -> Value.of(true))
     val (missing, ctx, v) = mustache.expandWithMissingKeys(t)(in)
     missing should be(List("name"))
     ctx should be(in)
@@ -66,7 +66,7 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "replace variables" in {
-    val t       = Template(Literal("Hello "), Variable("name"), Literal("!"))
+    val t = Template(Literal("Hello "), Variable("name"), Literal("!"))
     val context = Context("name" -> Value.of("Harry"))
     t.renderResult(context) should be("Hello Harry!")
   }
@@ -154,7 +154,7 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
       Template(Section("colors", Seq(Literal("- "), Variable("name"), Literal("\n"))))
     val context = Context(
       "colors" -> Value.lambda(_ => Expand.variableExpand.asString(Variable("name"))),
-      "name"   -> "Willy".value
+      "name" -> "Willy".value
     )
     t.renderResult(context) should be("Willy")
     t.renderResult(
@@ -208,7 +208,7 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "handle new lines after tags" in {
-    val data     = Context("boolean" -> Value.of(true))
+    val data = Context("boolean" -> Value.of(true))
     val template = "#{{#boolean}}\n/\n  {{/boolean}}"
     info(s"template: ${template.visible}  expected: ${"#\n/".visible}")
     val t = mustache.parse(template).toOption.get
@@ -216,7 +216,7 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "handle new lines before tags" in {
-    val data     = Context("boolean" -> Value.of(true))
+    val data = Context("boolean" -> Value.of(true))
     val template = """  {{#boolean}}
 #{{/boolean}}
 /"""
@@ -226,7 +226,7 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "remove indented standalone lines" in {
-    val data     = Context("boolean" -> Value.of(true))
+    val data = Context("boolean" -> Value.of(true))
     val template = """|
 | This Is
   {{#boolean}}
@@ -238,13 +238,13 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
 | This Is
 |
 | A Line"""
-    val t        = mustache.parse(template).toOption.get
+    val t = mustache.parse(template).toOption.get
     info(s"template: ${template.visible}  expected: ${expected.visible}")
     mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "remove standalone lines" in {
-    val data     = Context("boolean" -> Value.of(true))
+    val data = Context("boolean" -> Value.of(true))
     val template = """|
 | This Is
 {{#boolean}}
@@ -256,13 +256,13 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
 | This Is
 |
 | A Line"""
-    val t        = mustache.parse(template).toOption.get
+    val t = mustache.parse(template).toOption.get
     info(s"template: ${template.visible}  expected: ${expected.visible}")
     mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "permit multiple sections per template" in {
-    val data     = Context("bool" -> Value.of(true), "two" -> Value.of("second"))
+    val data = Context("bool" -> Value.of(true), "two" -> Value.of("second"))
     val template = """|
 {{#bool}}
 * first
@@ -283,10 +283,10 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "keep surrounding whitespace" in {
-    val data     = Context("boolean" -> Value.of(true))
+    val data = Context("boolean" -> Value.of(true))
     val template = " {{#boolean}}YES{{/boolean}}\n {{#boolean}}GOOD{{/boolean}}\n"
     val expected = " YES\n GOOD\n"
-    val t        = mustache.parse(template).toOption.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be(expected.visible)
   }
 
@@ -298,83 +298,84 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
       "d" -> Value.map("four" -> Value.of("4")),
       "e" -> Value.map("five" -> Value.of("5"))
     )
-    val template = """
-      |{{#a}}
-      |{{one}}
-      |{{#b}}
-      |{{one}}{{two}}{{one}}
-      |{{#c}}
-      |{{one}}{{two}}{{three}}{{two}}{{one}}
-      |{{#d}}
-      |{{one}}{{two}}{{three}}{{four}}{{three}}{{two}}{{one}}
-      |{{#e}}
-      |{{one}}{{two}}{{three}}{{four}}{{five}}{{four}}{{three}}{{two}}{{one}}
-      |{{/e}}
-      |{{one}}{{two}}{{three}}{{four}}{{three}}{{two}}{{one}}
-      |{{/d}}
-      |{{one}}{{two}}{{three}}{{two}}{{one}}
-      |{{/c}}
-      |{{one}}{{two}}{{one}}
-      |{{/b}}
-      |{{one}}
-      |{{/a}}""".stripMargin
+    val template =
+      """
+        |{{#a}}
+        |{{one}}
+        |{{#b}}
+        |{{one}}{{two}}{{one}}
+        |{{#c}}
+        |{{one}}{{two}}{{three}}{{two}}{{one}}
+        |{{#d}}
+        |{{one}}{{two}}{{three}}{{four}}{{three}}{{two}}{{one}}
+        |{{#e}}
+        |{{one}}{{two}}{{three}}{{four}}{{five}}{{four}}{{three}}{{two}}{{one}}
+        |{{/e}}
+        |{{one}}{{two}}{{three}}{{four}}{{three}}{{two}}{{one}}
+        |{{/d}}
+        |{{one}}{{two}}{{three}}{{two}}{{one}}
+        |{{/c}}
+        |{{one}}{{two}}{{one}}
+        |{{/b}}
+        |{{one}}
+        |{{/a}}""".stripMargin
 
     val expected = """
-      |1
-      |121
-      |12321
-      |1234321
-      |123454321
-      |1234321
-      |12321
-      |121
-      |1
-      |""".stripMargin
+                     |1
+                     |121
+                     |12321
+                     |1234321
+                     |123454321
+                     |1234321
+                     |12321
+                     |121
+                     |1
+                     |""".stripMargin
 
     val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "render falsy sections" in {
-    val data     = Context("boolean" -> Value.of(false))
+    val data = Context("boolean" -> Value.of(false))
     val template = "'{{^boolean}}This should be rendered.{{/boolean}}'"
     val expected = "'This should be rendered.'"
-    val t        = mustache.parse(template).toOption.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "omit truthy sections" in {
-    val data     = Context("boolean" -> Value.of(true))
+    val data = Context("boolean" -> Value.of(true))
     val template = "'{{^boolean}}This should not be rendered.{{/boolean}}'"
     val expected = "''"
-    val t        = mustache.parse(template).toOption.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "treat objects and hashes like truthy values " in {
-    val data     = Context("context" -> Value.map("name" -> Value.of("Joe")))
+    val data = Context("context" -> Value.map("name" -> Value.of("Joe")))
     val template = "'{{^context}}Hi {{name}}.{{/context}}'"
     val expected = "''"
-    val t        = mustache.parse(template).toOption.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "allow multiple inverted sections" in {
     val data = Context("bool" -> Value.of(false), "two" -> Value.of("second"))
     val template = """|
-      |{{^bool}}
-      |* first
-      |{{/bool}}
-      |* {{two}}
-      |{{^bool}}
-      |* third
-      |{{/bool}}""".stripMargin
+                      |{{^bool}}
+                      |* first
+                      |{{/bool}}
+                      |* {{two}}
+                      |{{^bool}}
+                      |* third
+                      |{{/bool}}""".stripMargin
 
     val expected = """|
-      |* first
-      |* second
-      |* third
-      |""".stripMargin
+                      |* first
+                      |* second
+                      |* third
+                      |""".stripMargin
 
     val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be(expected.visible)
@@ -385,12 +386,12 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
       Context("list" -> Value.fromSeq(List("a", "b", "c", "d", "e").map(Value.of)))
     val template = "'{{#list}}({{.}}){{/list}}'"
     val expected = "'(a)(b)(c)(d)(e)'"
-    val t        = mustache.parse(template).toOption.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be(expected.visible)
   }
 
   it should "recognize \\r\\n line endings" in {
-    val data     = Context("boolean" -> Value.of(true))
+    val data = Context("boolean" -> Value.of(true))
     val template = "|\r\n{{#boolean}}\r\ntest\r\n{{/boolean}}\r\n|"
     val expected = "|\r\ntest\r\n|"
 
@@ -408,23 +409,23 @@ class YamuscaSpec extends AnyFlatSpec with Matchers {
     )
     val template = "'{{#list}}({{#.}}{{.}}{{/.}}){{/list}}'"
     val expected = "'(123)(abc)'"
-    val t        = mustache.parse(template).toOption.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(data).visible should be(expected.visible)
   }
 
   "comment" should "be removed" in {
     val template = "123{{! this is a comment }}456"
     val expected = "123456"
-    val t        = mustache.parse(template).toOption.get
+    val t = mustache.parse(template).toOption.get
     mustache.render(t)(Context.empty) should be(expected)
   }
 
   it should "remove the whole line" in {
     val template = """|Begin.
-      |  {{! this is a comment }}
-      |End.""".stripMargin
+                      |  {{! this is a comment }}
+                      |End.""".stripMargin
     val expected = """|Begin.
-      |End.""".stripMargin
+                      |End.""".stripMargin
 
     expectResult(template, expected, Context.empty)
   }

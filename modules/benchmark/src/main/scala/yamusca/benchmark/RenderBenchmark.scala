@@ -15,8 +15,8 @@ import yamusca.imports._
 class RenderBenchmark {
 
   var data: JsonObject = _
-  var yt: Template     = _
-  var jt: Mustache     = _
+  var yt: Template = _
+  var jt: Mustache = _
 
   @Setup
   def setup(): Unit = {
@@ -63,7 +63,7 @@ class RenderBenchmark {
   }
 
   def dataJava = {
-    val c   = objToJava(data)
+    val c = objToJava(data)
     val ctx = new java.util.HashMap[String, Any]()
     ctx.put("tweets", java.util.Arrays.asList(c, c, c))
     ctx
@@ -84,8 +84,8 @@ class RenderBenchmark {
   @Benchmark
   def parseAndRenderJava(): Unit = {
     val mf = new DefaultMustacheFactory()
-    val t  = mf.compile(new StringReader(template), "template")
-    val w  = new StringWriter()
+    val t = mf.compile(new StringReader(template), "template")
+    val w = new StringWriter()
     t.execute(w, dataJava)
   }
 

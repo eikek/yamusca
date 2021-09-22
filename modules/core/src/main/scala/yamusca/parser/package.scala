@@ -5,7 +5,7 @@ import yamusca.data.Template
 package object parser {
 
   type ParseResult[A] = Either[(ParseInput, String), (ParseInput, A)]
-  type Parser[A]      = ParseInput => ParseResult[A]
+  type Parser[A] = ParseInput => ParseResult[A]
 
   final def parse(s: String): Either[(ParseInput, String), Template] =
     mustache.parseTemplate(ParseInput(s)) match {

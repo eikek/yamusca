@@ -9,7 +9,7 @@ class ParserBenchmark {
 
   val in = ParseInput(template)
   val rn = ParseInput("\r\n")
-  val n  = ParseInput("\n")
+  val n = ParseInput("\n")
 
   val tag1 = ParseInput("{{name}}")
   val tag2 = ParseInput("{{#name}}")

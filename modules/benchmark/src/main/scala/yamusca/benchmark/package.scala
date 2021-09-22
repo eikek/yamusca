@@ -6,48 +6,48 @@ package object benchmark {
   // Apache License 2.0
   val template =
     """<div>Timeline</div>
-    |<div>
-    |{{#tweets}}
-    |<div>
-    |<div>
-    |{{#user}}
-    |    <div><a href="https://twitter.com/{{screen_name}}">{{name}}</a> tweeted:</div>
-    |    <div><img src="{{profile_image_url_https}}"></div>
-    |    {{#entities}}
-    |        {{#url}}
-    |        <div><a href="{{url}}">{{display_url}}</a></div>
-    |        {{/url}}
-    |        {{#hashtags}}
-    |         <div><a href="search?q={{tag}}">#{{tag}}</a></div>
-    |        {{/hashtags}}
-    |        {{#media}}
-    |        <div><img src="{{media_url_https}}"></div>
-    |        {{/media}}
-    |        {{#user_mentions}}
-    |        <div><a href="{{screen_name}}">{{name}}</a></div>
-    |        {{/user_mentions}}
-    |    {{/entities}}
-    |{{/user}}
-    |<div>{{text}}</div>
-    |{{#entities}}
-    |    {{#url}}
-    |    <div><a href="{{url}}">{{display_url}}</a></div>
-    |    {{/url}}
-    |    {{#hashtags}}
-    |    <div><a href="search?q={{tag}}">#{{tag}}</a></div>
-    |    {{/hashtags}}
-    |    {{#media}}
-    |    <div><img src="{{media_url_https}}"></div>
-    |    {{/media}}
-    |    {{#user_mentions}}
-    |    <div><a href="{{screen_name}}">{{name}}</a></div>
-    |    {{/user_mentions}}
-    |{{/entities}}
-    |<div>{{{source}}}</div>
-    |</div>
-    |</div>
-    |{{/tweets}}
-    |</div>""".stripMargin
+      |<div>
+      |{{#tweets}}
+      |<div>
+      |<div>
+      |{{#user}}
+      |    <div><a href="https://twitter.com/{{screen_name}}">{{name}}</a> tweeted:</div>
+      |    <div><img src="{{profile_image_url_https}}"></div>
+      |    {{#entities}}
+      |        {{#url}}
+      |        <div><a href="{{url}}">{{display_url}}</a></div>
+      |        {{/url}}
+      |        {{#hashtags}}
+      |         <div><a href="search?q={{tag}}">#{{tag}}</a></div>
+      |        {{/hashtags}}
+      |        {{#media}}
+      |        <div><img src="{{media_url_https}}"></div>
+      |        {{/media}}
+      |        {{#user_mentions}}
+      |        <div><a href="{{screen_name}}">{{name}}</a></div>
+      |        {{/user_mentions}}
+      |    {{/entities}}
+      |{{/user}}
+      |<div>{{text}}</div>
+      |{{#entities}}
+      |    {{#url}}
+      |    <div><a href="{{url}}">{{display_url}}</a></div>
+      |    {{/url}}
+      |    {{#hashtags}}
+      |    <div><a href="search?q={{tag}}">#{{tag}}</a></div>
+      |    {{/hashtags}}
+      |    {{#media}}
+      |    <div><img src="{{media_url_https}}"></div>
+      |    {{/media}}
+      |    {{#user_mentions}}
+      |    <div><a href="{{screen_name}}">{{name}}</a></div>
+      |    {{/user_mentions}}
+      |{{/entities}}
+      |<div>{{{source}}}</div>
+      |</div>
+      |</div>
+      |{{/tweets}}
+      |</div>""".stripMargin
 
   val dataJson =
     """

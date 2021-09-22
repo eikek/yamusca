@@ -4,12 +4,12 @@ object Dependencies {
 
   object Version {
 
-    val scalaVersion213  = "2.13.6"
-    val scalaVersion212  = "2.12.15"
+    val scalaVersion213 = "2.13.6"
+    val scalaVersion212 = "2.12.15"
     val scalaTestVersion = "3.2.10"
-    val circeVersion     = "0.14.1"
-    val scalateVersion   = "1.9.7"
-    val organizeImports  = "0.5.0"
+    val circeVersion = "0.14.1"
+    val scalateVersion = "1.9.7"
+    val organizeImports = "0.5.0"
 
   }
 

@@ -62,7 +62,7 @@ object context {
       }
 
     val empty: Context = new Context {
-      def find(key: String)           = (this, None)
+      def find(key: String) = (this, None)
       override def toString(): String = "Context.empty"
     }
 
@@ -81,7 +81,7 @@ object context {
     def indexContext(index: Int, length: Int): Context =
       Context(
         "-first" -> Value.of(index == 0),
-        "-last"  -> Value.of(index == length - 1),
+        "-last" -> Value.of(index == length - 1),
         "-index" -> Value.of(s"${1 + index}")
       )
   }
@@ -95,17 +95,17 @@ object context {
       }
   }
   object Value {
-    def fromString(s: String): Value                     = SimpleValue(s)
-    def fromBoolean(b: Boolean): Value                   = BoolValue(b)
-    def fromSeq(vs: Seq[Value]): Value                   = ListValue(vs)
+    def fromString(s: String): Value = SimpleValue(s)
+    def fromBoolean(b: Boolean): Value = BoolValue(b)
+    def fromSeq(vs: Seq[Value]): Value = ListValue(vs)
     def fromContext(ctx: Context, empty: Boolean): Value = MapValue(ctx, empty)
     def fromMap(m: Map[String, Value]) = fromContext(Context.fromMap(m), m.isEmpty)
 
-    def of(s: String): Value                      = SimpleValue(s)
-    def of(s: Option[String]): Value              = SimpleValue(s.getOrElse(""))
-    def of(b: Boolean): Value                     = BoolValue(b)
-    def seq(vs: Value*): Value                    = ListValue(vs)
-    def map(vs: (String, Value)*): Value          = MapValue(Context(vs: _*), vs.isEmpty)
+    def of(s: String): Value = SimpleValue(s)
+    def of(s: Option[String]): Value = SimpleValue(s.getOrElse(""))
+    def of(b: Boolean): Value = BoolValue(b)
+    def seq(vs: Value*): Value = ListValue(vs)
+    def map(vs: (String, Value)*): Value = MapValue(Context(vs: _*), vs.isEmpty)
     def lambda(f: Section => Find[String]): Value = LambdaValue(f)
   }
   case class SimpleValue(v: String) extends Value {

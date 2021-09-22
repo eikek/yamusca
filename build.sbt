@@ -37,12 +37,12 @@ def makeScalacOptions(binaryVersion: String) =
        Nil)
 
 lazy val commonSettings = Seq(
-  name          := "yamusca",
-  organization  := "com.github.eikek",
-  licenses      := Seq("MIT" -> url("http://spdx.org/licenses/MIT")),
-  homepage      := Some(url("https://github.com/eikek/yamusca")),
+  name := "yamusca",
+  organization := "com.github.eikek",
+  licenses := Seq("MIT" -> url("http://spdx.org/licenses/MIT")),
+  homepage := Some(url("https://github.com/eikek/yamusca")),
   versionScheme := Some("early-semver"),
-  scalaVersion  := Dependencies.Version.scalaVersion213,
+  scalaVersion := Dependencies.Version.scalaVersion213,
   crossScalaVersions := Seq(
     Dependencies.Version.scalaVersion212,
     Dependencies.Version.scalaVersion213
@@ -52,8 +52,8 @@ lazy val commonSettings = Seq(
     !e.endsWith("value-discard")
   ),
   Compile / console / scalacOptions := Seq(),
-  Test / console / scalacOptions    := Seq(),
-  initialCommands                   := """
+  Test / console / scalacOptions := Seq(),
+  initialCommands := """
     import yamusca.imports._
     import yamusca.implicits._
     import yamusca.parser.ParseInput
@@ -78,13 +78,13 @@ lazy val publishSettings = Seq(
 )
 
 lazy val noPublish = Seq(
-  publish         := {},
-  publishLocal    := {},
+  publish := {},
+  publishLocal := {},
   publishArtifact := false
 )
 
 val scalafixSettings = Seq(
-  semanticdbEnabled := true,                        // enable SemanticDB
+  semanticdbEnabled := true, // enable SemanticDB
   semanticdbVersion := scalafixSemanticdb.revision, // use Scalafix compatible version
   ThisBuild / scalafixDependencies ++= Dependencies.organizeImports
 )
@@ -95,14 +95,14 @@ lazy val macros = crossProject(JSPlatform, JVMPlatform)
   .settings(commonSettings)
   .settings(scalafixSettings)
   .settings(
-    name       := "yamusca-macros",
+    name := "yamusca-macros",
     incOptions := incOptions.value.withLogRecompileOnMacro(false),
     libraryDependencies ++=
       Dependencies.scalaReflect(scalaVersion.value)
   )
 
 lazy val macrosJVM = macros.jvm
-lazy val macrosJS  = macros.js
+lazy val macrosJS = macros.js
 
 lazy val core = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
@@ -118,7 +118,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
   .dependsOn(macros)
 
 lazy val coreJVM = core.jvm
-lazy val coreJS  = core.js
+lazy val coreJS = core.js
 
 lazy val circe = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
@@ -126,7 +126,7 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform)
   .settings(commonSettings)
   .settings(scalafixSettings)
   .settings(
-    name        := "yamusca-circe",
+    name := "yamusca-circe",
     description := "Provide value converter for circes json values",
     libraryDependencies ++=
       Dependencies.circeCore ++
@@ -135,7 +135,7 @@ lazy val circe = crossProject(JSPlatform, JVMPlatform)
   .dependsOn(core)
 
 lazy val circeJVM = circe.jvm
-lazy val circeJS  = circe.js
+lazy val circeJS = circe.js
 
 lazy val benchmark = project
   .in(file("modules/benchmark"))
@@ -171,7 +171,7 @@ lazy val readme = project
     ),
     updateReadme := {
       mdoc.evaluated
-      val out    = mdocOut.value / "readme.md"
+      val out = mdocOut.value / "readme.md"
       val target = (LocalRootProject / baseDirectory).value / "README.md"
       val logger = streams.value.log
       logger.info(s"Updating readme: $out -> $target")

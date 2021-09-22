@@ -9,7 +9,7 @@ object expand {
     render(t)(c)._2
 
   def render(t: Template)(c: Context)(implicit r: Expand[Template]): (Context, String) = {
-    val b         = new Buffer
+    val b = new Buffer
     val (next, _) = r(b.append(_))(t).run(c)
     (next, b.toString)
   }
@@ -18,7 +18,7 @@ object expand {
       t: Template
   )(c: Context)(implicit r: Expand[Template]): (List[String], Context, String) = {
     val (next, v) = render(t)(c :: MissingKeysContext(Nil))
-    val ctx       = next.head.getOrElse(next)
+    val ctx = next.head.getOrElse(next)
     next.tail match {
       case Some(MissingKeysContext(ks)) => (ks, ctx, v)
       case _                            => (Nil, ctx, v)
@@ -39,7 +39,7 @@ object expand {
     def apply(consume: String => Unit)(e: T): Find[Unit]
     def asString(e: T): Find[String] =
       Find { ctx =>
-        val buf       = new Buffer
+        val buf = new Buffer
         val (next, _) = apply(buf append _)(e).run(ctx)
         (next, buf.toString)
       }

@@ -6,5 +6,5 @@ final case class Delim(start: String, end: String) {
 
 object Delim {
   val default = Delim("{{", "}}")
-  val triple  = Delim("{{{", "}}}")
+  val triple = Delim("{{{", "}}}")
 }
