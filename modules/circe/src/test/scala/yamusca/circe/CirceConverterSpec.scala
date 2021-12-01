@@ -1,5 +1,6 @@
 package yamusca.circe
 
+import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
 import org.scalatest.flatspec.AnyFlatSpec
@@ -28,4 +29,22 @@ class CirceConverterSpec extends AnyFlatSpec with Matchers {
     )
   }
 
+  it should "treat null values as absent" in {
+    val template = "My dog's name is {{name}}, age is {{^age}}unknown{{/age}}{{age}}."
+    Json
+      .obj("name" -> "Bello".asJson, "age" -> Json.Null)
+      .unsafeRender(template) should be(
+      "My dog's name is Bello, age is unknown."
+    )
+    Json
+      .obj("name" -> "Bello".asJson)
+      .unsafeRender(template) should be(
+      "My dog's name is Bello, age is unknown."
+    )
+    Json
+      .obj("name" -> "Bello".asJson, "age" -> 8.asJson)
+      .unsafeRender(template) should be(
+      "My dog's name is Bello, age is 8."
+    )
+  }
 }

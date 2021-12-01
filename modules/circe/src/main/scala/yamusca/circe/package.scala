@@ -26,7 +26,7 @@ package object circe {
   ): ValueConverter[Json] =
     ValueConverter.of(
       _.fold(
-        Value.fromContext(Context.empty, true),
+        Value.of(None),
         b => vb(b),
         n => vnum(n),
         s => vs(s),
