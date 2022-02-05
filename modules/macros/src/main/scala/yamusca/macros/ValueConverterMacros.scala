@@ -15,8 +15,8 @@ object ValueConverterMacros {
     }
     val cases = fields.map { f =>
       q"""if (${TermName(
-        f.toString
-      ).decodedName.toString} == key) { result = Some(a.$f.asMustacheValue) }"""
+          f.toString
+        ).decodedName.toString} == key) { result = Some(a.$f.asMustacheValue) }"""
     }
 
     if (fields.isEmpty)
