@@ -6,8 +6,8 @@ yamusca
 <a href="https://github.com/eikek/yamusca/blob/master/LICENSE.txt" title="License"><img src="https://img.shields.io/github/license/eikek/yamusca.svg?style=flat-square&color=steelblue"></a>
 <a href="https://index.scala-lang.org/eikek/yamusca/yamusca-core" title="Scaladex"><img src="https://index.scala-lang.org/eikek/yamusca/yamusca-core/latest.svg?color=blue&style=flat-square"></a>
 
-Yet another mustache parser/renderer for scala. It is published for
-scala 2.12 and 2.13, since version 0.8.0 it is also built for scalajs.
+Yet another mustache parser/renderer for Scala and ScalaJS. It is
+published for scala 2.12, 2.13 and 3.
 
 
 Goals
@@ -35,11 +35,12 @@ Using [sbt](http://scala-sbt.org):
 
 ``` sbt
 libraryDependencies ++= Seq(
-  "com.github.eikek" %% "yamusca-core" % "@VERSION@"
+  "com.github.eikek" %% "yamusca-core" % "@VERSION@",
+  "com.github.eikek" %% "yamusca-derive" % "@VERSION@" //only if you use `deriveValueConverter`
 )
 ```
 
-It is available for Scala 2.12 and 2.13.
+It is available for Scala 2.12, 2.13 and 3.
 
 Simple Example
 --------------
@@ -64,19 +65,20 @@ import gets rid of some boilerplate for creating a `Context` object:
 
 ```scala mdoc
 import yamusca.implicits._
+import yamusca.derive._
 
 case class Data(name: String, items: List[String])
 
-implicit val dataConv: ValueConverter[Data] = ValueConverter.deriveConverter[Data]
+implicit val dataConv: ValueConverter[Data] = deriveValueConverter[Data]
 
 Data("Eike", List("one", "two")).unsafeRender("Hello {{name}}, items: {{#items}} - {{.}}, {{/items}}.")
 ```
 
-The `deriveConverter` is a macro that creates a `ValueConverter`
+The `deriveValueConverter` is a macro that creates a `ValueConverter`
 implementation for a case class. It requires that there are
 `ValueConverter` in scope for each member type. The import
-`yamusca.implicits._` pulls in `ValueConverter` for some standard types
-(`String`, `Int`, etc see
+`yamusca.implicits._` pulls in `ValueConverter` for some standard
+types (`String`, `Int`, etc see
 [converter.scala](./modules/core/src/main/scala/yamusca/converter.scala))
 and it enriches all types that implement `ValueConverter` with three
 methods:

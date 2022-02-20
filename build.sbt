@@ -1,4 +1,4 @@
-addCommandAlias("ci", "; lint; +test; +publishLocal")
+addCommandAlias("ci", "; lint; +test; readme/updateReadme; +publishLocal")
 addCommandAlias(
   "lint",
   "; scalafmtSbtCheck; scalafmtCheckAll; Compile/scalafix --check; Test/scalafix --check"
@@ -33,6 +33,10 @@ def makeScalacOptions(binaryVersion: String) =
        )
      else if (binaryVersion.startsWith("2.13"))
        List("-Werror", "-Wdead-code", "-Wunused", "-Wvalue-discard")
+     else if (binaryVersion.startsWith("3"))
+       List(
+         "-Xfatal-warnings"
+       )
      else
        Nil)
 
@@ -45,7 +49,8 @@ lazy val commonSettings = Seq(
   scalaVersion := Dependencies.Version.scalaVersion213,
   crossScalaVersions := Seq(
     Dependencies.Version.scalaVersion212,
-    Dependencies.Version.scalaVersion213
+    Dependencies.Version.scalaVersion213,
+    Dependencies.Version.scalaVersion3
   ),
   scalacOptions ++= makeScalacOptions(scalaBinaryVersion.value),
   Test / scalacOptions := (Compile / scalacOptions).value.filter(e =>
@@ -89,21 +94,6 @@ val scalafixSettings = Seq(
   ThisBuild / scalafixDependencies ++= Dependencies.organizeImports
 )
 
-lazy val macros = crossProject(JSPlatform, JVMPlatform)
-  .crossType(CrossType.Pure)
-  .in(file("modules/macros"))
-  .settings(commonSettings)
-  .settings(scalafixSettings)
-  .settings(
-    name := "yamusca-macros",
-    incOptions := incOptions.value.withLogRecompileOnMacro(false),
-    libraryDependencies ++=
-      Dependencies.scalaReflect(scalaVersion.value)
-  )
-
-lazy val macrosJVM = macros.jvm
-lazy val macrosJS = macros.js
-
 lazy val core = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("modules/core"))
@@ -112,13 +102,30 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
   .settings(
     name := "yamusca-core",
     libraryDependencies ++=
-      Dependencies.scalatest.map(_ % Test) ++
-        Dependencies.scalaReflect(scalaVersion.value)
+      Dependencies.scalatest.map(_ % Test)
   )
-  .dependsOn(macros)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
+
+lazy val derive = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("modules/derive"))
+  .settings(commonSettings)
+  .settings(scalafixSettings)
+  .settings(
+    name := "yamusca-derive",
+    libraryDependencies ++= {
+      if (scalaBinaryVersion.value == "3") Seq.empty
+      else Dependencies.scalaReflect(scalaVersion.value)
+    },
+    libraryDependencies ++=
+      Dependencies.scalatest.map(_ % Test)
+  )
+  .dependsOn(core)
+
+lazy val deriveJVM = derive.jvm
+lazy val deriveJS = derive.js
 
 lazy val circe = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
@@ -151,8 +158,7 @@ lazy val benchmark = project
     libraryDependencies ++=
       Dependencies.mustacheJava ++
         Dependencies.circeParser ++
-        Dependencies.circeGeneric ++
-        Dependencies.scalateCore
+        Dependencies.circeGeneric
   )
   .dependsOn(coreJVM, circeJVM)
 
@@ -179,10 +185,10 @@ lazy val readme = project
       ()
     }
   )
-  .dependsOn(coreJVM, circeJVM)
+  .dependsOn(coreJVM, circeJVM, deriveJVM)
 
 lazy val root = project
   .in(file("."))
   .settings(commonSettings)
   .settings(noPublish)
-  .aggregate(coreJVM, coreJS, macrosJVM, macrosJS, circeJVM, circeJS, benchmark)
+  .aggregate(coreJVM, coreJS, deriveJVM, deriveJS, circeJVM, circeJS, benchmark)

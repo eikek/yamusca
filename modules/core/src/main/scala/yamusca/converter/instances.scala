@@ -12,9 +12,9 @@ import yamusca.context._
 trait instances {
 
   implicit val stringValueConverter: ValueConverter[String] =
-    ValueConverter.of(Value.fromString _)
+    ValueConverter.of(Value.fromString)
   implicit val booValueConverter: ValueConverter[Boolean] =
-    ValueConverter.of(Value.fromBoolean _)
+    ValueConverter.of(Value.fromBoolean)
   implicit val shortConverter: ValueConverter[Short] =
     ValueConverter.toDefaultString[Short]
   implicit val intValueConverter: ValueConverter[Int] =
@@ -51,7 +51,7 @@ trait instances {
     ValueConverter.toDefaultString[Instant]
 
   implicit val contextValueConverter: ValueConverter[Context] =
-    ValueConverter.of(ctx => Value.fromContext(ctx, false))
+    ValueConverter.of(ctx => Value.fromContext(ctx, empty = false))
 
   implicit def seqValueConverter[A](implicit
       c: ValueConverter[A]
@@ -78,7 +78,7 @@ trait instances {
   implicit def optionValueConverter[A](implicit
       c: ValueConverter[A]
   ): ValueConverter[Option[A]] =
-    ValueConverter.of(_.map(c).getOrElse(Value.fromContext(Context.empty, true)))
+    ValueConverter.of(_.map(c).getOrElse(Value.fromContext(Context.empty, empty = true)))
 
   implicit def eitherValueConverter[A, B](implicit
       va: ValueConverter[A],

@@ -1,5 +1,6 @@
 package yamusca
 
+import yamusca.context.Value._
 import yamusca.context._
 import yamusca.data._
 
@@ -10,8 +11,8 @@ object expand {
 
   def render(t: Template)(c: Context)(implicit r: Expand[Template]): (Context, String) = {
     val b = new Buffer
-    val (next, _) = r(b.append(_))(t).run(c)
-    (next, b.toString)
+    val (next, _) = r(b.append)(t).run(c)
+    (next, b.toString())
   }
 
   def renderWithMissingKeys(
@@ -40,8 +41,8 @@ object expand {
     def asString(e: T): Find[String] =
       Find { ctx =>
         val buf = new Buffer
-        val (next, _) = apply(buf append _)(e).run(ctx)
-        (next, buf.toString)
+        val (next, _) = apply(buf.append)(e).run(ctx)
+        (next, buf.toString())
       }
   }
   object Expand {
@@ -138,6 +139,6 @@ object expand {
       ()
     }
 
-    override def toString() = buffer.toString()
+    override def toString = buffer.toString()
   }
 }
