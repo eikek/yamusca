@@ -6,8 +6,8 @@ yamusca
 <a href="https://github.com/eikek/yamusca/blob/master/LICENSE.txt" title="License"><img src="https://img.shields.io/github/license/eikek/yamusca.svg?style=flat-square&color=steelblue"></a>
 <a href="https://index.scala-lang.org/eikek/yamusca/yamusca-core" title="Scaladex"><img src="https://index.scala-lang.org/eikek/yamusca/yamusca-core/latest.svg?color=blue&style=flat-square"></a>
 
-Yet another mustache parser/renderer for scala. It is published for
-scala 2.12 and 2.13, since version 0.8.0 it is also built for scalajs.
+Yet another mustache parser/renderer for Scala and ScalaJS. It is
+published for scala 2.12, 2.13 and 3.
 
 
 Goals
@@ -35,11 +35,12 @@ Using [sbt](http://scala-sbt.org):
 
 ``` sbt
 libraryDependencies ++= Seq(
-  "com.github.eikek" %% "yamusca-core" % "0.8.0"
+  "com.github.eikek" %% "yamusca-core" % "0.9.0",
+  "com.github.eikek" %% "yamusca-derive" % "0.9.0" //only if you use `deriveValueConverter`
 )
 ```
 
-It is available for Scala 2.12 and 2.13.
+It is available for Scala 2.12, 2.13 and 3.
 
 Simple Example
 --------------
@@ -48,7 +49,7 @@ Simple Example
 import yamusca.imports._
 
 val data = Context("name" -> Value.of("Eike"), "items" -> Value.fromSeq( List("one", "two").map(Value.of) ))
-// data: Context = yamusca.context$Context$$anon$2@78be6393
+// data: Context = yamusca.context.Context$$anon$2@62b9fa29
 
 val templ = mustache.parse("Hello {{name}}, items: {{#items}} - {{.}}{{^-last}}, {{/-last}}{{/items}}.")
 // templ: Either[(yamusca.parser.ParseInput, String), Template] = Right(
@@ -89,21 +90,22 @@ import gets rid of some boilerplate for creating a `Context` object:
 
 ```scala
 import yamusca.implicits._
+import yamusca.derive._
 
 case class Data(name: String, items: List[String])
 
-implicit val dataConv: ValueConverter[Data] = ValueConverter.deriveConverter[Data]
+implicit val dataConv: ValueConverter[Data] = deriveValueConverter[Data]
 // dataConv: ValueConverter[Data] = <function1>
 
 Data("Eike", List("one", "two")).unsafeRender("Hello {{name}}, items: {{#items}} - {{.}}, {{/items}}.")
 // res1: String = "Hello Eike, items:  - one,  - two, ."
 ```
 
-The `deriveConverter` is a macro that creates a `ValueConverter`
+The `deriveValueConverter` is a macro that creates a `ValueConverter`
 implementation for a case class. It requires that there are
 `ValueConverter` in scope for each member type. The import
-`yamusca.implicits._` pulls in `ValueConverter` for some standard types
-(`String`, `Int`, etc see
+`yamusca.implicits._` pulls in `ValueConverter` for some standard
+types (`String`, `Int`, etc see
 [converter.scala](./modules/core/src/main/scala/yamusca/converter.scala))
 and it enriches all types that implement `ValueConverter` with three
 methods:
@@ -253,12 +255,12 @@ def main(n: Int, f: Path): Unit = {
 
 main(1, Paths.get("build.sbt"))
 // (FileData(None,build.sbt),Name: build.sbt
-// Size: 4981)
+// Size: 5465)
 main(2, Paths.get("build.sbt"))
-// (FileData(Some(3b6e2cc1ecf48ee52693557cb37830321d8bc4318f3b8abef41938ee3),build.sbt),Name: build.sbt
-// Sha: 3b6e2cc1ecf48ee52693557cb37830321d8bc4318f3b8abef41938ee3
-// Sha again: 3b6e2cc1ecf48ee52693557cb37830321d8bc4318f3b8abef41938ee3
-// Size: 4981)
+// (FileData(Some(294392842a34aef6c213ea8a96f61ef51da30abb172b277d8e4941792c0c6dc),build.sbt),Name: build.sbt
+// Sha: 294392842a34aef6c213ea8a96f61ef51da30abb172b277d8e4941792c0c6dc
+// Sha again: 294392842a34aef6c213ea8a96f61ef51da30abb172b277d8e4941792c0c6dc
+// Size: 5465)
 ```
 
 The `FileData` case class implements the
@@ -293,7 +295,7 @@ mustache.expandWithMissingKeys(
 )(templateData.asContext)
 // res5: (List[String], Context, String) = (
 //   List("firstname"),
-//   yamusca.context$Context$$anon$3@5fd5c93b,
+//   yamusca.context.Context$$anon$3@432acd98,
 //   "Hello  John, items:  - one,  - two, ."
 // )
 ```
@@ -308,7 +310,7 @@ mustache.expandWithMissingKeys(
 )(templateData.asContext)
 // res6: (List[String], Context, String) = (
 //   List(),
-//   yamusca.context$Context$$anon$3@6d6ed893,
+//   yamusca.context.Context$$anon$3@2d605890,
 //   "Hello John, items:  - one,  - two, ."
 // )
 ```
