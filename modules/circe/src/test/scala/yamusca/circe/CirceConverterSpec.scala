@@ -3,47 +3,51 @@ package yamusca.circe
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import munit._
 import yamusca.implicits._
 
-class CirceConverterSpec extends AnyFlatSpec with Matchers {
+class CirceConverterSpec extends FunSuite {
 
   case class Person(name: String, year: Int)
   case class University(name: String, students: List[Person])
 
-  "circe converter" should "generate mustache value from json" in {
+  test("circe converter should generate mustache value from json") {
     val json = Person("Leibniz", 1646).asJson
 
-    json.unsafeRender("{{name}} was born in {{year}}") should be(
+    assertEquals(
+      json.unsafeRender("{{name}} was born in {{year}}"),
       "Leibniz was born in 1646"
     )
   }
 
-  it should "work with lists" in {
+  test("work with lists") {
     val fsu = University("FSU", List(Person("Leibniz", 1646), Person("Frege", 1848)))
-    fsu.asJson.unsafeRender(
-      "Uni {{name}}; students: {{#students}}{{name}} ({{year}}), {{/students}}"
-    ) should be(
+    assertEquals(
+      fsu.asJson.unsafeRender(
+        "Uni {{name}}; students: {{#students}}{{name}} ({{year}}), {{/students}}"
+      ),
       "Uni FSU; students: Leibniz (1646), Frege (1848), "
     )
   }
 
-  it should "treat null values as absent" in {
+  test("treat null values as absent") {
     val template = "My dog's name is {{name}}, age is {{^age}}unknown{{/age}}{{age}}."
-    Json
-      .obj("name" -> "Bello".asJson, "age" -> Json.Null)
-      .unsafeRender(template) should be(
+    assertEquals(
+      Json
+        .obj("name" -> "Bello".asJson, "age" -> Json.Null)
+        .unsafeRender(template),
       "My dog's name is Bello, age is unknown."
     )
-    Json
-      .obj("name" -> "Bello".asJson)
-      .unsafeRender(template) should be(
+    assertEquals(
+      Json
+        .obj("name" -> "Bello".asJson)
+        .unsafeRender(template),
       "My dog's name is Bello, age is unknown."
     )
-    Json
-      .obj("name" -> "Bello".asJson, "age" -> 8.asJson)
-      .unsafeRender(template) should be(
+    assertEquals(
+      Json
+        .obj("name" -> "Bello".asJson, "age" -> 8.asJson)
+        .unsafeRender(template),
       "My dog's name is Bello, age is 8."
     )
   }

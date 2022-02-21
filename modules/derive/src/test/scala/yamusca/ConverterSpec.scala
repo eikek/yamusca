@@ -7,13 +7,12 @@ import java.nio.file.Path
 import java.time.{Duration, Instant}
 import java.util.UUID
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import munit._
 import yamusca.derive._
 import yamusca.implicits._
 import yamusca.imports._
 
-class ConverterSpec extends AnyFlatSpec with Matchers {
+class ConverterSpec extends FunSuite {
 
   case class Numbers(
       int: Int = 15,
@@ -47,13 +46,14 @@ class ConverterSpec extends AnyFlatSpec with Matchers {
       deriveValueConverter[ManyValues]
   }
 
-  "converter" should "be available for some types" in {
-    ManyValues().unsafeRender(
-      "name:{{name}}, year:{{year}}, file:{{file}}, path:{{path}}, uri:{{uri}}, url:{{url}}, uuid:{{uuid}}, " +
-        "duration:{{duration}}, instant:{{instant}}, strings:{{#strings}}({{.}}){{/strings}}, " +
-        "int:{{numbers.int}}, double:{{numbers.double}}, float:{{numbers.float}}, " +
-        "jbd:{{numbers.jbd}}, jbi:{{numbers.jbi}}, sbd:{{numbers.sbd}}, sbi:{{numbers.sbi}}"
-    ) should be(
+  test("converter should be available for some types") {
+    assertEquals(
+      ManyValues().unsafeRender(
+        "name:{{name}}, year:{{year}}, file:{{file}}, path:{{path}}, uri:{{uri}}, url:{{url}}, uuid:{{uuid}}, " +
+          "duration:{{duration}}, instant:{{instant}}, strings:{{#strings}}({{.}}){{/strings}}, " +
+          "int:{{numbers.int}}, double:{{numbers.double}}, float:{{numbers.float}}, " +
+          "jbd:{{numbers.jbd}}, jbi:{{numbers.jbi}}, sbd:{{numbers.sbd}}, sbi:{{numbers.sbi}}"
+      ),
       "name:many values, year:2022, file:test.txt, path:path.txt, uri:jdbc:postgres://localhost, url:http://github.com, " +
         "uuid:2384fe1c-b962-470f-817e-9b167d93c0b7, duration:PT20S, " +
         "instant:2017-06-29T12:30:00Z, strings:(a)(b)(c), int:15, double:15.50, float:4.30, jbd:0.0001, " +
