@@ -2,36 +2,35 @@ package yamusca
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import munit._
 import yamusca.data._
 import yamusca.parser._
 import yamusca.parser.mustache._
 
-class ParserCombSpec extends AnyFlatSpec with Matchers {
+class ParserCombSpec extends FunSuite {
 
-  "standalone" should "ignore whitespace around p if only thing in line" in {
+  test("standalone ignore whitespace around p if only thing in line") {
     val sp = standaloneOr(consume("x"))
     sp(ParseInput("   x   \n")).left.map(e => fail(e._2)).map { t =>
-      t._1.current should be("")
-      t._2 should be("x")
+      assertEquals(t._1.current, "")
+      assertEquals(t._2, "x")
     }
   }
 
-  it should "work without whitespace" in {
+  test("work without whitespace") {
     standaloneOr(consume("x"))(ParseInput("x")).left.map(e => fail(e._2)).map { t =>
-      t._1.exhausted should be(true)
-      t._2 should be("x")
+      assertEquals(t._1.exhausted, true)
+      assertEquals(t._2, "x")
     }
   }
 
-  "parseTag" should "parse a starting tag" in {
+  test("parseTag should parse a starting tag") {
     def check(tag: String, expectDelim: Delim, expectName: String): Unit =
       parseTag(ParseInput(tag)) match {
         case Left((_, err)) => fail(err)
         case Right((_, (d, n))) =>
-          d should be(expectDelim)
-          n should be(expectName)
+          assertEquals(d, expectDelim)
+          assertEquals(n, expectName)
       }
     check("{{a}}", Delim.default, "a")
     check("{{{a}}}", Delim.triple, "a")
@@ -39,11 +38,11 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
     check("{{& xy}}", Delim.default, "& xy")
   }
 
-  "parseVariable" should "parse variables" in {
+  test("parseVariable should parse variables") {
     def check(in: String, expect: Variable): Unit =
       parseVariable(ParseInput(in)) match {
         case Left((_, err)) => fail(err)
-        case Right((_, v))  => v should be(expect)
+        case Right((_, v))  => assertEquals(v, expect)
       }
 
     check("{{abc}}", Variable("abc", false))
@@ -53,24 +52,24 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
     check("{{& xy }}", Variable("xy", true))
   }
 
-  "parseComment" should "parse comments" in {
+  test("parseComment should parse comments") {
     def check(in: String, expect: String): Unit =
       parseComment(ParseInput(in)) match {
         case Left((_, err)) => fail(err)
-        case Right((_, v))  => v.text should be(expect)
+        case Right((_, v))  => assertEquals(v.text, expect)
       }
 
     check("{{! hallo }}", " hallo ")
     check("{{! hello\nworld }}", " hello\nworld ")
   }
 
-  "parseStartSection" should "parse starting section tags" in {
+  test("parseStartSection should parse starting section tags") {
     def check(in: String, invExpect: Boolean, nameExpect: String): Unit =
       parseStartSection(ParseInput(in)) match {
         case Left((_, err)) => fail(err)
         case Right((_, (inv, name))) =>
-          inv should be(invExpect)
-          name should be(nameExpect)
+          assertEquals(inv, invExpect)
+          assertEquals(name, nameExpect)
       }
 
     check("{{#hello}}", false, "hello")
@@ -78,25 +77,25 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
     check("{{# hello }}", false, "hello")
   }
 
-  "parseEndSection" should "parse ending section tags" in {
+  test("parseEndSection should parse ending section tags") {
     def check(in: String, nameExpect: String): Unit =
       parseEndSection(ParseInput(in)) match {
         case Left((_, err)) => fail(err)
         case Right((_, name)) =>
-          name should be(nameExpect)
+          assertEquals(name, nameExpect)
       }
 
     check("{{/hello}}", "hello")
     check("{{/ hello }}", "hello")
   }
 
-  "consumeUntilEndSection" should "consume input until end section" in {
+  test("consumeUntilEndSection should consume input until end section") {
     def check(in: String, name: String, expect: String, rest: String): Unit =
       consumeUntilEndSection(name)(ParseInput(in)) match {
         case Left((_, err)) => fail(err)
         case Right((next, pout)) =>
-          pout.current should be(expect)
-          next.current should be(rest)
+          assertEquals(pout.current, expect)
+          assertEquals(next.current, rest)
       }
 
     check("abcde{{/hello}}", "hello", "abcde", "")
@@ -109,63 +108,63 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
     )
   }
 
-  "parseLiteral" should "parse literals" in {
+  test("parseLiteral should parse literals") {
     def check(in: String, expect: String, rest: String): Unit =
       parseLiteral(ParseInput(in)) match {
         case Left((_, err)) => fail(err)
         case Right((next, l)) =>
-          l.text should be(expect)
-          next.current should be(rest)
+          assertEquals(l.text, expect)
+          assertEquals(next.current, rest)
       }
 
     check("abcde", "abcde", "")
     check("abcde{{#start}}", "abcde", "{{#start}}")
   }
 
-  it should "stop before standalone tags" in {
+  test("stop before standalone tags") {
     parseLiteral(ParseInput("abced \n  {{#test}}\nbla{{/test}}")).left
       .map(e => fail(e._2))
       .map { t =>
-        t._2 should be(Literal("abced \n"))
-        t._1.current should be("{{#test}}\nbla{{/test}}")
+        assertEquals(t._2, Literal("abced \n"))
+        assertEquals(t._1.current, "{{#test}}\nbla{{/test}}")
       }
 
     parseLiteral(ParseInput("{{/boolean}}\n {{#boolean}}").dropLeft(12)).left
       .map(e => fail(e._2))
       .map { t =>
-        t._2 should be(Literal("\n"))
-        t._1.current should be("{{#boolean}}")
+        assertEquals(t._2, Literal("\n"))
+        assertEquals(t._1.current, "{{#boolean}}")
       }
   }
 
-  it should "recognize non standalone tags" in {
+  test("recognize non standalone tags") {
     parseLiteral(ParseInput("abc\n  '{{#test}}x{{/test}}")).left
       .map(e => fail(e._2))
       .map { t =>
-        t._2 should be(Literal("abc\n  '"))
-        t._1.current should be("{{#test}}x{{/test}}")
+        assertEquals(t._2, Literal("abc\n  '"))
+        assertEquals(t._1.current, "{{#test}}x{{/test}}")
       }
 
     parseLiteral(ParseInput("{{#test}}x{{/test}}\nxy").dropLeft(19)).left
       .map(e => fail(e._2))
       .map { t =>
-        t._2 should be(Literal("\nxy"))
-        t._1.current should be("")
+        assertEquals(t._2, Literal("\nxy"))
+        assertEquals(t._1.current, "")
       }
   }
 
-  "parseSetDelimiter" should "change delimiter to input" in {
+  test("parseSetDelimiter should change delimiter to input") {
     parseSetDelimiter(ParseInput("{{=<< >>=}}")).left.map(e => fail(e._2)).map { t =>
-      t._2 should be(())
-      t._1.delim should be(Delim("<<", ">>"))
+      assertEquals(t._2, ())
+      assertEquals(t._1.delim, Delim("<<", ">>"))
     }
   }
 
-  "parseSection" should "parse sections" in {
+  test("parseSection should parse sections") {
     def check(in: String, expect: Section, rest: String): Unit =
       parseSection(ParseInput(in)).left.map(e => fail(e._2)).map { res =>
-        res._2 should be(expect)
-        res._1.current should be(rest)
+        assertEquals(res._2, expect)
+        assertEquals(res._1.current, rest)
       }
 
     check("{{#test}}hallo{{/test}}", Section("test", Seq(Literal("hallo")), false), "")
@@ -193,11 +192,11 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
     check("{{#a}}\n{{/a}}r", Section("a", Seq.empty), "r")
   }
 
-  "parseElement" should "parse all elements" in {
+  test("parseElement should parse all elements") {
     def check(in: String, expect: Element): Unit =
       parseElement(ParseInput(in)) match {
         case Left((_, err)) => fail(err)
-        case Right((_, l))  => l should be(expect)
+        case Right((_, l))  => assertEquals(l, expect)
       }
 
     check("abcd", Literal("abcd"))
@@ -206,10 +205,10 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
     check("{{#test}}help{{/test}}", Section("test", Seq(Literal("help")), false))
   }
 
-  it should "fail on wrong input" in {
+  test("fail on wrong input") {
     def check(in: String, msg: String): Unit =
       parseElement(ParseInput(in)) match {
-        case Left((_, err)) => err should be(msg)
+        case Left((_, err)) => assertEquals(err, msg)
         case Right((_, el)) => fail(s"Expected not to succeed: $in => $el")
       }
 
@@ -217,7 +216,7 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
     check("{{aaa", "Expected string not found: }}")
   }
 
-  "repeat" should "call literal parser just once" in {
+  test("repeat should call literal parser just once") {
     val flag = new AtomicBoolean(false)
     val p: Parser[Literal] = in =>
       if (flag.compareAndSet(false, true)) parseLiteral(in)
@@ -225,32 +224,36 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
 
     repeat(p)(ParseInput("ab")).left
       .map(ex => fail(ex._2))
-      .map(res => res._2 should be(Vector(Literal("ab"))))
+      .map(res => assertEquals(res._2, Vector(Literal("ab"))))
   }
 
-  it should "call parsers multiple times" in {
+  test("call parsers multiple times") {
     val p = consume("a").or(consume("b"))
     repeat(p)(ParseInput("abab")).left
       .map(e => fail(e._2))
-      .map(res => res._2 should be(Vector("a", "b", "a", "b")))
+      .map(res => assertEquals(res._2, Vector("a", "b", "a", "b")))
   }
 
-  "parseTemplate" should "parse literals and variables" in {
+  test("parseTemplate should parse literals and variables") {
     parseTemplate(ParseInput("'{{test}}'")).left
       .map(e => fail(e._2))
       .map(t =>
-        t._2 should be(Template(Seq(Literal("'"), Variable("test", false), Literal("'"))))
+        assertEquals(
+          t._2,
+          Template(Seq(Literal("'"), Variable("test", false), Literal("'")))
+        )
       )
   }
 
-  it should "parse long sections" in {
+  test("parse long sections") {
     val templateStr = """{{#a}}x
                         |{{b}}yz{{c}}
                         |{{/a}}""".stripMargin
     parseTemplate(ParseInput(templateStr)).left
       .map(e => fail(e._2))
       .map(t =>
-        t._2 should be(
+        assertEquals(
+          t._2,
           Template(
             Seq(
               Section(
@@ -269,13 +272,14 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
       )
   }
 
-  it should "parse multiple sections" in {
+  test("parse multiple sections") {
     parseTemplate(
       ParseInput("{{#bool}}first{{/bool}} {{two}} {{#bool}}third{{/bool}}")
     ).left
       .map(e => fail(e._2))
       .map(t =>
-        t._2 should be(
+        assertEquals(
+          t._2,
           Template(
             Seq(
               Section("bool", Seq(Literal("first")), false),
@@ -289,13 +293,14 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
       )
   }
 
-  it should "parse multiple inverted sections" in {
+  test("parse multiple inverted sections") {
     parseTemplate(
       ParseInput("{{^bool}}first{{/bool}} {{two}} {{^bool}}third{{/bool}}")
     ).left
       .map(e => fail(e._2))
       .map(t =>
-        t._2 should be(
+        assertEquals(
+          t._2,
           Template(
             Seq(
               Section("bool", Seq(Literal("first")), true),
@@ -309,11 +314,12 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
       )
   }
 
-  it should "recognize custom delimiters" in {
+  test("recognize custom delimiters") {
     parseTemplate(
       ParseInput("{{=<< >>=}}<<#test>><<name>><</test>><<={{ }}=>>{{help}}")
     ).left.map(e => fail(e._2)).map { t =>
-      t._2 should be(
+      assertEquals(
+        t._2,
         Template(
           Seq(
             Literal(""),
@@ -325,7 +331,8 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
       )
     }
     parseTemplate(ParseInput("{{=<< >>=}}{{hello}}")).left.map(e => fail(e._2)).map { t =>
-      t._2 should be(
+      assertEquals(
+        t._2,
         Template(
           Seq(
             Literal(""),
@@ -336,11 +343,12 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
     }
   }
 
-  it should "not remove whitespace on tags" in {
+  test("not remove whitespace on tags") {
     parseTemplate(
       ParseInput(" {{#boolean}}YES{{/boolean}}\n {{#boolean}}GOOD{{/boolean}}\n")
     ).left.map(e => fail(e._2)).map { t =>
-      t._2 should be(
+      assertEquals(
+        t._2,
         Template(
           Seq(
             Literal(" "),
@@ -356,7 +364,8 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
     parseTemplate(ParseInput("#{{#boolean}}\n/\n  {{/boolean}}")).left
       .map(e => fail(e._2))
       .map { t =>
-        t._2 should be(
+        assertEquals(
+          t._2,
           Template(
             Seq(
               Literal("#"),
@@ -367,13 +376,14 @@ class ParserCombSpec extends AnyFlatSpec with Matchers {
       }
   }
 
-  "cut" should "restrict backtracking" in {
+  test("cut should restrict backtracking") {
     val p: Parser[String] =
       (consume("a").cut ~ consume("1"))
         .map(_ => "a1")
         .or((consume("b") ~ consume("2")).map(_ => "b2"))
 
-    p(ParseInput("a3")) should be(
+    assertEquals(
+      p(ParseInput("a3")),
       Left((ParseInput("a3").copy(pos = 1, cutted = 1) -> "Expected '1'"))
     )
   }

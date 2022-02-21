@@ -40,17 +40,26 @@ def makeScalacOptions(binaryVersion: String) =
      else
        Nil)
 
+val testSettings = Seq(
+  libraryDependencies ++=
+    (Dependencies.munit ++
+      Dependencies.munitCatsEffect)
+      .map(_ % Test),
+  Test / parallelExecution := true,
+  Test / testOptions += Tests.Argument(TestFrameworks.MUnit, "-b")
+)
+
 lazy val commonSettings = Seq(
   name := "yamusca",
   organization := "com.github.eikek",
   licenses := Seq("MIT" -> url("http://spdx.org/licenses/MIT")),
   homepage := Some(url("https://github.com/eikek/yamusca")),
   versionScheme := Some("early-semver"),
-  scalaVersion := Dependencies.Version.scalaVersion213,
+  scalaVersion := Dependencies.Version.scala213,
   crossScalaVersions := Seq(
-    Dependencies.Version.scalaVersion212,
-    Dependencies.Version.scalaVersion213,
-    Dependencies.Version.scalaVersion3
+    Dependencies.Version.scala212,
+    Dependencies.Version.scala213,
+    Dependencies.Version.scala3
   ),
   scalacOptions ++= makeScalacOptions(scalaBinaryVersion.value),
   Test / scalacOptions := (Compile / scalacOptions).value.filter(e =>
@@ -96,53 +105,46 @@ val scalafixSettings = Seq(
 
 lazy val core = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
+  .withoutSuffixFor(JVMPlatform)
   .in(file("modules/core"))
   .settings(commonSettings)
+  .settings(testSettings)
   .settings(scalafixSettings)
   .settings(
-    name := "yamusca-core",
-    libraryDependencies ++=
-      Dependencies.scalatest.map(_ % Test)
+    name := "yamusca-core"
   )
-
-lazy val coreJVM = core.jvm
-lazy val coreJS = core.js
 
 lazy val derive = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
+  .withoutSuffixFor(JVMPlatform)
   .in(file("modules/derive"))
   .settings(commonSettings)
+  .settings(testSettings)
   .settings(scalafixSettings)
   .settings(
     name := "yamusca-derive",
     libraryDependencies ++= {
       if (scalaBinaryVersion.value == "3") Seq.empty
       else Dependencies.scalaReflect(scalaVersion.value)
-    },
-    libraryDependencies ++=
-      Dependencies.scalatest.map(_ % Test)
+    }
   )
   .dependsOn(core)
 
-lazy val deriveJVM = derive.jvm
-lazy val deriveJS = derive.js
-
 lazy val circe = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
+  .withoutSuffixFor(JVMPlatform)
   .in(file("modules/circe"))
   .settings(commonSettings)
+  .settings(testSettings)
   .settings(scalafixSettings)
   .settings(
     name := "yamusca-circe",
     description := "Provide value converter for circes json values",
     libraryDependencies ++=
       Dependencies.circeCore ++
-        (Dependencies.scalatest ++ Dependencies.circeGeneric).map(_ % Test)
+        Dependencies.circeGeneric.map(_ % Test)
   )
   .dependsOn(core)
-
-lazy val circeJVM = circe.jvm
-lazy val circeJS = circe.js
 
 lazy val benchmark = project
   .in(file("modules/benchmark"))
@@ -160,7 +162,7 @@ lazy val benchmark = project
         Dependencies.circeParser ++
         Dependencies.circeGeneric
   )
-  .dependsOn(coreJVM, circeJVM)
+  .dependsOn(core.jvm, circe.jvm)
 
 lazy val readme = project
   .in(file("modules/readme"))
@@ -185,10 +187,10 @@ lazy val readme = project
       ()
     }
   )
-  .dependsOn(coreJVM, circeJVM, deriveJVM)
+  .dependsOn(core.jvm, circe.jvm, derive.jvm)
 
 lazy val root = project
   .in(file("."))
   .settings(commonSettings)
   .settings(noPublish)
-  .aggregate(coreJVM, coreJS, deriveJVM, deriveJS, circeJVM, circeJS, benchmark)
+  .aggregate(core.jvm, core.js, derive.jvm, derive.js, circe.jvm, circe.js, benchmark)

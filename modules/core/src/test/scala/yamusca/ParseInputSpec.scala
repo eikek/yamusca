@@ -1,100 +1,99 @@
 package yamusca
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import munit._
 import yamusca.parser._
 
-class ParseInputSpec extends AnyFlatSpec with Matchers {
+class ParseInputSpec extends FunSuite {
 
-  "current" should "return current substring" in {
-    ParseInput("ab").dropLeft(1).current should be("b")
-    ParseInput("ab").dropLeft(5).current should be("")
-    ParseInput("ab12de").dropRight(4).current should be("ab")
+  test("current should return current substring") {
+    assertEquals(ParseInput("ab").dropLeft(1).current, "b")
+    assertEquals(ParseInput("ab").dropLeft(5).current, "")
+    assertEquals(ParseInput("ab12de").dropRight(4).current, "ab")
   }
 
-  "charAt" should "return char at given position" in {
-    ParseInput("abc").charAt(0) should be(Some('a'))
-    ParseInput("abc").charAt(-2) should be(None)
-    ParseInput("abc").charAt(1) should be(Some('b'))
-    ParseInput("abc").charAt(2) should be(Some('c'))
-    ParseInput("abc").charAt(3) should be(None)
+  test("charAt should return char at given position") {
+    assertEquals(ParseInput("abc").charAt(0), Some('a'))
+    assertEquals(ParseInput("abc").charAt(-2), None)
+    assertEquals(ParseInput("abc").charAt(1), Some('b'))
+    assertEquals(ParseInput("abc").charAt(2), Some('c'))
+    assertEquals(ParseInput("abc").charAt(3), None)
   }
 
-  "takeLeft" should "return valid substrings" in {
+  test("takeLeft should return valid substrings") {
     val in = ParseInput("abc123")
 
     intercept[IllegalArgumentException](in.takeLeft(-5))
-    in.takeLeft(3).current should be("abc")
-    in.takeLeft(0).exhausted should be(true)
-    (in.takeLeft(6) should be).theSameInstanceAs(in)
-    (in.takeLeft(10) should be).theSameInstanceAs(in)
+    assertEquals(in.takeLeft(3).current, "abc")
+    assertEquals(in.takeLeft(0).exhausted, true)
+    assert(in.takeLeft(6) eq in)
+    assert(in.takeLeft(10) eq in)
   }
 
-  "dropLeft" should "return valid substrings" in {
+  test("dropLeft return valid substrings") {
     val in = ParseInput("abc123")
 
     intercept[IllegalArgumentException](in.dropLeft(-5))
-    in.dropLeft(3).current should be("123")
-    (in.dropLeft(0) should be).theSameInstanceAs(in)
-    in.dropLeft(6).exhausted should be(true)
-    in.dropLeft(10).exhausted should be(true)
+    assertEquals(in.dropLeft(3).current, "123")
+    assert(in.dropLeft(0) eq in)
+    assertEquals(in.dropLeft(6).exhausted, true)
+    assertEquals(in.dropLeft(10).exhausted, true)
   }
 
-  "takeRight" should "return valid substrings" in {
+  test("takeRight should return valid substrings") {
     val in = ParseInput("abc123")
 
     intercept[IllegalArgumentException](in.takeRight(-5))
-    in.takeRight(3).current should be("123")
-    in.takeRight(0).exhausted should be(true)
-    (in.takeRight(6) should be).theSameInstanceAs(in)
-    (in.takeRight(10) should be).theSameInstanceAs(in)
+    assertEquals(in.takeRight(3).current, "123")
+    assertEquals(in.takeRight(0).exhausted, true)
+    assert(in.takeRight(6) eq in)
+    assert(in.takeRight(10) eq in)
   }
 
-  "dropRight" should "return valid substrings" in {
+  test("dropRight should return valid substrings") {
     val in = ParseInput("abc123")
 
     intercept[IllegalArgumentException](in.dropRight(-5))
-    in.dropRight(3).current should be("abc")
-    (in.dropRight(0) should be).theSameInstanceAs(in)
-    in.dropRight(6).exhausted should be(true)
-    in.dropRight(10).exhausted should be(true)
+    assertEquals(in.dropRight(3).current, "abc")
+    assert(in.dropRight(0) eq in)
+    assertEquals(in.dropRight(6).exhausted, true)
+    assertEquals(in.dropRight(10).exhausted, true)
   }
 
-  "expandRight" should "expand within raw string" in {
+  test("expandRight should expand within raw string") {
     val in = ParseInput("abc123").dropLeft(1).dropRight(1)
-    in.current should be("bc12")
+    assertEquals(in.current, "bc12")
 
-    in.expandRight(1).current should be("bc123")
+    assertEquals(in.expandRight(1).current, "bc123")
     intercept[IndexOutOfBoundsException](in.expandRight(2))
     intercept[IllegalArgumentException](in.expandRight(-2))
   }
 
-  "expandLeft" should "expand within raw string" in {
+  test("expandLeft should expand within raw string") {
     val in = ParseInput("abc123").dropLeft(1).dropRight(1)
-    in.current should be("bc12")
+    assertEquals(in.current, "bc12")
 
-    in.expandLeft(1).current should be("abc12")
+    assertEquals(in.expandLeft(1).current, "abc12")
     intercept[IndexOutOfBoundsException](in.expandLeft(2))
     intercept[IllegalArgumentException](in.expandLeft(-2))
   }
 
-  "splitAt" should "split within input" in {
+  test("splitAt should split within input") {
     val in = ParseInput("abc||def||hij")
 
     in.splitAtNext("||") match {
       case None => fail("|| not found")
       case Some((left, right)) =>
-        left.current should be("abc")
-        right.current should be("||def||hij")
+        assertEquals(left.current, "abc")
+        assertEquals(right.current, "||def||hij")
     }
 
     in.dropLeft(5).splitAtNext("||") match {
       case None => fail("|| not found")
       case Some((left, right)) =>
-        left.current should be("def")
-        right.current should be("||hij")
+        assertEquals(left.current, "def")
+        assertEquals(right.current, "||hij")
     }
 
-    in.dropLeft(5).dropRight(5).splitAtNext("||") should be(None)
+    assertEquals(in.dropLeft(5).dropRight(5).splitAtNext("||"), None)
   }
 }
