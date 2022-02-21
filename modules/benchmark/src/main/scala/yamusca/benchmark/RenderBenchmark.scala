@@ -5,7 +5,6 @@ import java.io.{StringReader, StringWriter}
 import com.github.mustachejava._
 import io.circe._
 import io.circe.parser._
-import org.fusesource.scalate.mustache.MustacheParser
 import org.openjdk.jmh.annotations._
 import yamusca.circe._
 import yamusca.implicits._
@@ -106,11 +105,4 @@ class RenderBenchmark {
     val w = new StringWriter
     jt.execute(w, dataJava)
   }
-
-  @Benchmark
-  def parseScalate(): Unit = {
-    val p = new MustacheParser()
-    p.parse(template)
-  }
-
 }

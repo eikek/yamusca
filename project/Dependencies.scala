@@ -6,6 +6,7 @@ object Dependencies {
 
     val scalaVersion213 = "2.13.8"
     val scalaVersion212 = "2.12.15"
+    val scalaVersion3 = "3.1.1"
     val scalaTestVersion = "3.2.11"
     val circeVersion = "0.14.1"
     val scalateVersion = "1.9.7"
@@ -35,12 +36,6 @@ object Dependencies {
     "io.circe" %% "circe-parser" % Version.circeVersion
   )
   val circeAll = circeCore ++ circeGeneric ++ circeParser
-
-  // https://github.com/scalate/scalate
-  // ASL 2.0
-  val scalateCore = Seq(
-    "org.scalatra.scalate" %% "scalate-core" % Version.scalateVersion
-  )
 
   val organizeImports = Seq(
     "com.github.liancheng" %% "organize-imports" % Version.organizeImports
