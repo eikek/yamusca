@@ -60,7 +60,7 @@ object data {
 
       Show { s =>
         val prefix = "{{" + (if (s.inverted) "^" else "#")
-        prefix + s"${s.key}}}" + (s.inner.map(render).mkString) + s"{{/${s.key}}}"
+        prefix + s"${s.key}}}" + s.inner.map(render).mkString + s"{{/${s.key}}}"
       }
     }
   }

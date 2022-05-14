@@ -22,7 +22,7 @@ class RenderBenchmark {
     data = parse(dataJson).toOption.get.asObject.get
     yt = mustache.parse(template).toOption.get
     jt = {
-      val mf = new DefaultMustacheFactory()
+      val mf = new DefaultMustacheFactory
       mf.compile(new StringReader(template), "template")
     }
   }
@@ -45,7 +45,7 @@ class RenderBenchmark {
   }
 
   def objToJava(jo: JsonObject): java.util.Map[String, Any] = {
-    val m = new java.util.HashMap[String, Any]()
+    val m = new java.util.HashMap[String, Any]
     jo.keys.foreach { name =>
       jo(name).foreach {
         _.fold(
@@ -63,7 +63,7 @@ class RenderBenchmark {
 
   def dataJava = {
     val c = objToJava(data)
-    val ctx = new java.util.HashMap[String, Any]()
+    val ctx = new java.util.HashMap[String, Any]
     ctx.put("tweets", java.util.Arrays.asList(c, c, c))
     ctx
   }
@@ -82,15 +82,15 @@ class RenderBenchmark {
 
   @Benchmark
   def parseAndRenderJava(): Unit = {
-    val mf = new DefaultMustacheFactory()
+    val mf = new DefaultMustacheFactory
     val t = mf.compile(new StringReader(template), "template")
-    val w = new StringWriter()
+    val w = new StringWriter
     t.execute(w, dataJava)
   }
 
   @Benchmark
   def parseOnlyJava(): Unit = {
-    val mf = new DefaultMustacheFactory()
+    val mf = new DefaultMustacheFactory
     mf.compile(new StringReader(template), "template")
   }
 

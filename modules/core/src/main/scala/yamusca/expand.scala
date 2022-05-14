@@ -133,7 +133,7 @@ object expand {
       }
   }
 
-  final private class Buffer(val buffer: StringBuilder = new StringBuilder()) {
+  final private class Buffer(val buffer: StringBuilder = new StringBuilder) {
     def append(str: String): Unit = {
       buffer.append(str)
       ()

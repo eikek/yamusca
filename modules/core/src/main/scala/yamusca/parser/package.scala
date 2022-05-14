@@ -9,7 +9,7 @@ package object parser {
 
   final def parse(s: String): Either[(ParseInput, String), Template] =
     mustache.parseTemplate(ParseInput(s)) match {
-      case Right((in, t)) =>
+      case Right(in, t) =>
         if (in.exhausted) Right(t)
         else Left((in, s"Error in template near ${in.pos}: ${in.current}"))
       case l @ Left(_) => l.asInstanceOf[Either[(ParseInput, String), Template]]
@@ -18,8 +18,8 @@ package object parser {
   implicit final class ParserOps[A](val p: Parser[A]) extends AnyVal {
     def flatMap[B](f: A => Parser[B]): Parser[B] = { in =>
       p(in) match {
-        case Right((next, a)) => f(a)(next)
-        case l @ Left(_)      => l.asInstanceOf[ParseResult[B]]
+        case Right(next, a) => f(a)(next)
+        case l @ Left(_)    => l.asInstanceOf[ParseResult[B]]
       }
     }
 
@@ -40,7 +40,7 @@ package object parser {
 
     def or[B >: A](other: Parser[B]): Parser[B] = { in =>
       p(in) match {
-        case l @ Left((next, _)) =>
+        case l @ Left(next, _) =>
           if (next.cutted <= in.pos) other(in)
           else l.asInstanceOf[ParseResult[B]]
         case r @ Right(_) => r
@@ -49,14 +49,14 @@ package object parser {
 
     def opt: Parser[Option[A]] = { in =>
       p(in) match {
-        case Right((next, a)) => Right((next, Some(a)))
-        case Left(_)          => Right((in, None))
+        case Right(next, a) => Right((next, Some(a)))
+        case Left(_)        => Right((in, None))
       }
     }
 
     def cut: Parser[A] = { in =>
       p(in) match {
-        case Right((in, a)) =>
+        case Right(in, a) =>
           Right((in.cut, a))
         case l @ Left(_) =>
           l.asInstanceOf[ParseResult[A]]

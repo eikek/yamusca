@@ -27,8 +27,8 @@ class ParserCombSpec extends FunSuite {
   test("parseTag should parse a starting tag") {
     def check(tag: String, expectDelim: Delim, expectName: String): Unit =
       parseTag(ParseInput(tag)) match {
-        case Left((_, err)) => fail(err)
-        case Right((_, (d, n))) =>
+        case Left(_, err) => fail(err)
+        case Right(_, (d, n)) =>
           assertEquals(d, expectDelim)
           assertEquals(n, expectName)
       }
@@ -41,8 +41,8 @@ class ParserCombSpec extends FunSuite {
   test("parseVariable should parse variables") {
     def check(in: String, expect: Variable): Unit =
       parseVariable(ParseInput(in)) match {
-        case Left((_, err)) => fail(err)
-        case Right((_, v))  => assertEquals(v, expect)
+        case Left(_, err) => fail(err)
+        case Right(_, v)  => assertEquals(v, expect)
       }
 
     check("{{abc}}", Variable("abc", false))
@@ -55,8 +55,8 @@ class ParserCombSpec extends FunSuite {
   test("parseComment should parse comments") {
     def check(in: String, expect: String): Unit =
       parseComment(ParseInput(in)) match {
-        case Left((_, err)) => fail(err)
-        case Right((_, v))  => assertEquals(v.text, expect)
+        case Left(_, err) => fail(err)
+        case Right(_, v)  => assertEquals(v.text, expect)
       }
 
     check("{{! hallo }}", " hallo ")
@@ -66,8 +66,8 @@ class ParserCombSpec extends FunSuite {
   test("parseStartSection should parse starting section tags") {
     def check(in: String, invExpect: Boolean, nameExpect: String): Unit =
       parseStartSection(ParseInput(in)) match {
-        case Left((_, err)) => fail(err)
-        case Right((_, (inv, name))) =>
+        case Left(_, err) => fail(err)
+        case Right(_, (inv, name)) =>
           assertEquals(inv, invExpect)
           assertEquals(name, nameExpect)
       }
@@ -80,8 +80,8 @@ class ParserCombSpec extends FunSuite {
   test("parseEndSection should parse ending section tags") {
     def check(in: String, nameExpect: String): Unit =
       parseEndSection(ParseInput(in)) match {
-        case Left((_, err)) => fail(err)
-        case Right((_, name)) =>
+        case Left(_, err) => fail(err)
+        case Right(_, name) =>
           assertEquals(name, nameExpect)
       }
 
@@ -92,8 +92,8 @@ class ParserCombSpec extends FunSuite {
   test("consumeUntilEndSection should consume input until end section") {
     def check(in: String, name: String, expect: String, rest: String): Unit =
       consumeUntilEndSection(name)(ParseInput(in)) match {
-        case Left((_, err)) => fail(err)
-        case Right((next, pout)) =>
+        case Left(_, err) => fail(err)
+        case Right(next, pout) =>
           assertEquals(pout.current, expect)
           assertEquals(next.current, rest)
       }
@@ -111,8 +111,8 @@ class ParserCombSpec extends FunSuite {
   test("parseLiteral should parse literals") {
     def check(in: String, expect: String, rest: String): Unit =
       parseLiteral(ParseInput(in)) match {
-        case Left((_, err)) => fail(err)
-        case Right((next, l)) =>
+        case Left(_, err) => fail(err)
+        case Right(next, l) =>
           assertEquals(l.text, expect)
           assertEquals(next.current, rest)
       }
@@ -195,8 +195,8 @@ class ParserCombSpec extends FunSuite {
   test("parseElement should parse all elements") {
     def check(in: String, expect: Element): Unit =
       parseElement(ParseInput(in)) match {
-        case Left((_, err)) => fail(err)
-        case Right((_, l))  => assertEquals(l, expect)
+        case Left(_, err) => fail(err)
+        case Right(_, l)  => assertEquals(l, expect)
       }
 
     check("abcd", Literal("abcd"))
@@ -208,8 +208,8 @@ class ParserCombSpec extends FunSuite {
   test("fail on wrong input") {
     def check(in: String, msg: String): Unit =
       parseElement(ParseInput(in)) match {
-        case Left((_, err)) => assertEquals(err, msg)
-        case Right((_, el)) => fail(s"Expected not to succeed: $in => $el")
+        case Left(_, err) => assertEquals(err, msg)
+        case Right(_, el) => fail(s"Expected not to succeed: $in => $el")
       }
 
     check("{{#test}}ab", "Cannot find end section: test")
@@ -384,7 +384,7 @@ class ParserCombSpec extends FunSuite {
 
     assertEquals(
       p(ParseInput("a3")),
-      Left((ParseInput("a3").copy(pos = 1, cutted = 1) -> "Expected '1'"))
+      Left(ParseInput("a3").copy(pos = 1, cutted = 1) -> "Expected '1'")
     )
   }
 }

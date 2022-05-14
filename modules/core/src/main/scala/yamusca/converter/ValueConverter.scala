@@ -5,7 +5,7 @@ import java.util.Locale
 import yamusca.context._
 
 @annotation.implicitNotFound("There is no ValueConverter for type '${A}' in scope.")
-trait ValueConverter[A] extends (A => Value)
+trait ValueConverter[A] extends A => Value
 
 object ValueConverter {
 

@@ -31,8 +31,8 @@ trait Parsers {
   def peek[A](p: Parser[A]): Parser[A] = { in =>
     val widen = in.copy(end = in.raw.length)
     p(widen) match {
-      case Right((_, a))  => Right((in, a))
-      case Left((_, err)) => Left((in, err))
+      case Right(_, a)  => Right((in, a))
+      case Left(_, err) => Left((in, err))
     }
   }
 
@@ -42,8 +42,8 @@ trait Parsers {
 
   def consumeUntil(s: String): Parser[String] = { in =>
     in.splitAtNext(s) match {
-      case Some((left, right)) => Right(right -> left.current)
-      case None                => Left(in -> s"Expected string not found: $s")
+      case Some(left, right) => Right(right -> left.current)
+      case None              => Left(in -> s"Expected string not found: $s")
     }
   }
 
@@ -73,9 +73,9 @@ trait Parsers {
       if (in.exhausted) Right(in -> result)
       else
         p(in) match {
-          case Right((next, a)) =>
+          case Right(next, a) =>
             go(next, result :+ a)
-          case Left((next, _)) =>
+          case Left(next, _) =>
             Right(next -> result)
         }
 

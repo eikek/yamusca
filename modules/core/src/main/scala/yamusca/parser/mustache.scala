@@ -10,7 +10,7 @@ object mustache extends Parsers {
 
   val parseTag: Parser[(Delim, String)] = { in =>
     if (in.delim != Delim.default) tag(in.delim)(in)
-    else (tag(Delim.triple).or(tag(in.delim)))(in)
+    else tag(Delim.triple).or(tag(in.delim))(in)
   }
 
   def parseTag(p: Char => Boolean): Parser[(Delim, Char, String)] = { in =>
@@ -45,14 +45,14 @@ object mustache extends Parsers {
 
   val parseSetDelimiter: Parser[Unit] = { in =>
     tag(Delim(in.delim.start + "=", "=" + in.delim.end))(in) match {
-      case Right((next, (_, name))) =>
+      case Right(next, (_, name)) =>
         name.split(' ').map(_.trim).filter(_.nonEmpty).toList match {
           case s :: e :: Nil =>
             Right((next.copy(delim = Delim(s, e)), ()))
           case _ =>
             Left(in -> s"Invalid set delimiters: $name")
         }
-      case Left((_, msg)) => Left(in -> msg)
+      case Left(_, msg) => Left(in -> msg)
     }
   }
 
@@ -62,7 +62,7 @@ object mustache extends Parsers {
     )
     val text: Parser[String] = { in =>
       in.moveRight(in.delim.start.length).splitAtNext(in.delim.start) match {
-        case Some((left, right)) =>
+        case Some(left, right) =>
           right.standaloneStart match {
             case Some(idx) if stag(right).isRight =>
               Right((right.copy(end = in.end), left.copy(end = idx + 1).current))
@@ -97,13 +97,13 @@ object mustache extends Parsers {
   def consumeUntilEndSection(name: String): Parser[ParseInput] = { in =>
     val delim = in.delim.start + "/"
     val stop: ParseInput => Boolean = in =>
-      (ignoreWs ~ consume(name) ~ ignoreWs ~ consume(in.delim.end))(in).isRight
+      ignoreWs ~ consume(name) ~ ignoreWs ~ consume(in.delim.end) (in).isRight
     @annotation.tailrec
     def go(pin: ParseInput): Option[(ParseInput, ParseInput)] =
       pin.splitAtNext(delim) match {
-        case Some((left, right)) if stop(right.dropLeft(delim.length)) =>
+        case Some(left, right) if stop(right.dropLeft(delim.length)) =>
           standaloneOr(parseEndSection)(right) match {
-            case Right((next, _)) =>
+            case Right(next, _) =>
               Some((in.copy(end = left.end), next))
 
             case _ =>
@@ -116,8 +116,8 @@ object mustache extends Parsers {
       }
 
     go(in) match {
-      case Some((l, r)) => Right(r -> l)
-      case None         => Left(in -> s"Cannot find end section: $name")
+      case Some(l, r) => Right(r -> l)
+      case None       => Left(in -> s"Cannot find end section: $name")
     }
   }
 
