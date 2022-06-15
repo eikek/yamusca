@@ -384,7 +384,7 @@ class ParserCombSpec extends FunSuite {
 
     assertEquals(
       p(ParseInput("a3")),
-      Left((ParseInput("a3").copy(pos = 1, cutted = 1) -> "Expected '1'"))
+      Left(ParseInput("a3").copy(pos = 1, cutted = 1) -> "Expected '1'")
     )
   }
 }
