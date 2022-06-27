@@ -10,7 +10,7 @@ object mustache extends Parsers {
 
   val parseTag: Parser[(Delim, String)] = { in =>
     if (in.delim != Delim.default) tag(in.delim)(in)
-    else (tag(Delim.triple).or(tag(in.delim)))(in)
+    else tag(Delim.triple).or(tag(in.delim))(in)
   }
 
   def parseTag(p: Char => Boolean): Parser[(Delim, Char, String)] = { in =>
