@@ -3,13 +3,13 @@ import sbt._
 object Dependencies {
 
   object Version {
-    val scala213 = "2.13.8"
+    val scala213 = "2.13.9"
     val scala212 = "2.12.16"
     val scala3 = "3.2.0"
 
     val munitVersion = "0.7.29"
     val munitCatsEffectVersion = "1.0.7"
-    val circeVersion = "0.14.2"
+    val circeVersion = "0.14.3"
     val scalateVersion = "1.9.7"
     val organizeImports = "0.6.0"
 
