@@ -42,6 +42,9 @@ libraryDependencies ++= Seq(
 
 It is available for Scala 2.12, 2.13 and 3.
 
+The examples are compiled one after the other such that imports from a
+previous one are available to the next.
+
 Simple Example
 --------------
 
