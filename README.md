@@ -35,12 +35,15 @@ Using [sbt](http://scala-sbt.org):
 
 ``` sbt
 libraryDependencies ++= Seq(
-  "com.github.eikek" %% "yamusca-core" % "0.9.0",
-  "com.github.eikek" %% "yamusca-derive" % "0.9.0" //only if you use `deriveValueConverter`
+  "com.github.eikek" %% "yamusca-core" % "0.10.0",
+  "com.github.eikek" %% "yamusca-derive" % "0.10.0" //only if you use `deriveValueConverter`
 )
 ```
 
 It is available for Scala 2.12, 2.13 and 3.
+
+The examples are compiled one after the other such that imports from a
+previous one are available to the next.
 
 Simple Example
 --------------
@@ -49,7 +52,7 @@ Simple Example
 import yamusca.imports._
 
 val data = Context("name" -> Value.of("Eike"), "items" -> Value.fromSeq( List("one", "two").map(Value.of) ))
-// data: Context = yamusca.context.Context$$anon$2@62b9fa29
+// data: Context = yamusca.context.Context$$anon$2@69c30ca2
 
 val templ = mustache.parse("Hello {{name}}, items: {{#items}} - {{.}}{{^-last}}, {{/-last}}{{/items}}.")
 // templ: Either[(yamusca.parser.ParseInput, String), Template] = Right(
@@ -295,7 +298,7 @@ mustache.expandWithMissingKeys(
 )(templateData.asContext)
 // res5: (List[String], Context, String) = (
 //   List("firstname"),
-//   yamusca.context.Context$$anon$3@432acd98,
+//   yamusca.context.Context$$anon$3@35ab16ae,
 //   "Hello  John, items:  - one,  - two, ."
 // )
 ```
@@ -310,7 +313,7 @@ mustache.expandWithMissingKeys(
 )(templateData.asContext)
 // res6: (List[String], Context, String) = (
 //   List(),
-//   yamusca.context.Context$$anon$3@2d605890,
+//   yamusca.context.Context$$anon$3@679257d6,
 //   "Hello John, items:  - one,  - two, ."
 // )
 ```
