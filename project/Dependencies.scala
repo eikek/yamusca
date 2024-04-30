@@ -26,7 +26,7 @@ object Dependencies {
   )
 
   val mustacheJava = Seq(
-    "com.github.spullara.mustache.java" % "compiler" % "0.9.11"
+    "com.github.spullara.mustache.java" % "compiler" % "0.9.12"
   )
 
   // https://github.com/circe/circe
