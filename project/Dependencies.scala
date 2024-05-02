@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 
   object Version {
-    val scala213 = "2.13.13"
+    val scala213 = "2.13.14"
     val scala212 = "2.12.19"
     val scala3 = "3.4.1"
 
@@ -26,7 +26,7 @@ object Dependencies {
   )
 
   val mustacheJava = Seq(
-    "com.github.spullara.mustache.java" % "compiler" % "0.9.12"
+    "com.github.spullara.mustache.java" % "compiler" % "0.9.13"
   )
 
   // https://github.com/circe/circe
