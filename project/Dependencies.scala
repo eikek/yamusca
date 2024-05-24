@@ -8,7 +8,7 @@ object Dependencies {
     val scala3 = "3.3.3"
 
     val munitVersion = "0.7.29"
-    val munitCatsEffectVersion = "1.0.7"
+    val munitCatsEffectVersion = "2.0.0"
     val circeVersion = "0.14.7"
     val scalateVersion = "1.9.7"
     val organizeImports = "0.6.0"
@@ -22,7 +22,7 @@ object Dependencies {
 
   // https://github.com/typelevel/munit-cats-effect
   val munitCatsEffect = Seq(
-    "org.typelevel" %% "munit-cats-effect-3" % Version.munitCatsEffectVersion
+    "org.typelevel" %% "munit-cats-effect" % Version.munitCatsEffectVersion
   )
 
   val mustacheJava = Seq(
