@@ -4,7 +4,7 @@ object Dependencies {
 
   object Version {
     val scala213 = "2.13.14"
-    val scala212 = "2.12.19"
+    val scala212 = "2.12.20"
     val scala3 = "3.3.3"
 
     val munitVersion = "1.0.1"
