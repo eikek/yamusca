@@ -9,7 +9,7 @@ object Dependencies {
 
     val munitVersion = "1.0.0"
     val munitCatsEffectVersion = "2.0.0"
-    val circeVersion = "0.14.9"
+    val circeVersion = "0.14.10"
     val scalateVersion = "1.9.7"
     val organizeImports = "0.6.0"
 
