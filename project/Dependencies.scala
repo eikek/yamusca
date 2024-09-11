@@ -7,7 +7,7 @@ object Dependencies {
     val scala212 = "2.12.19"
     val scala3 = "3.3.3"
 
-    val munitVersion = "1.0.0"
+    val munitVersion = "1.0.1"
     val munitCatsEffectVersion = "2.0.0"
     val circeVersion = "0.14.9"
     val scalateVersion = "1.9.7"
