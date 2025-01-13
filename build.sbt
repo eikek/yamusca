@@ -154,9 +154,8 @@ lazy val benchmark = project
   .settings(scalafixSettings)
   .settings(
     name := "yamusca-benchmark",
-    scalacOptions := makeScalacOptions(scalaBinaryVersion.value).filter(e =>
-      !e.endsWith("value-discard")
-    ),
+    scalacOptions := makeScalacOptions(scalaBinaryVersion.value)
+      .filter(e => !e.endsWith("value-discard")),
     libraryDependencies ++=
       Dependencies.mustacheJava ++
         Dependencies.circeParser ++
