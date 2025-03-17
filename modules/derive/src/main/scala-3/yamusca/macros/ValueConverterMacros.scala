@@ -10,14 +10,7 @@ import yamusca.context.*
 // - https://blog.philipp-martini.de/blog/magic-mirror-scala3/
 // - https://docs.scala-lang.org/scala3/reference/contextual/derivation.html
 object ValueConverterMacros:
-  final inline def deriveConverter[A <: Product](using inline A: Mirror.ProductOf[A]) =
-    deriveViaMirror[A]
-
-  inline given deriveViaMirror[A <: Product](using
-      m: Mirror.ProductOf[A]
-  ): ValueConverter[A] =
-    val elems = summonAll[m.MirroredElemTypes]
-    val names = getElemLabels[m.MirroredElemLabels]
+  private def newConverter[A](elems: List[ValueConverter[?]], names: Seq[String]): ValueConverter[A] =
     new ValueConverter[A]:
       def apply(a: A): Value =
         val t = a.asInstanceOf[Product].productIterator.toList
@@ -33,6 +26,16 @@ object ValueConverterMacros:
           },
           false
         )
+
+  final inline def deriveConverter[A <: Product](using inline A: Mirror.ProductOf[A]) =
+    deriveViaMirror[A]
+
+  inline given deriveViaMirror[A <: Product](using
+      m: Mirror.ProductOf[A]
+  ): ValueConverter[A] =
+    val elems = summonAll[m.MirroredElemTypes]
+    val names = getElemLabels[m.MirroredElemLabels]
+    newConverter(elems, names)
 
   inline def summonAll[T <: Tuple]: List[ValueConverter[_]] =
     inline erasedValue[T] match
