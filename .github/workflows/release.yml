@@ -6,18 +6,18 @@ on:
     types: [ published ]
 jobs:
   release:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2.3.4
         with:
-          fetch-depth: 0
-      - uses: olafurpg/setup-scala@v10
-        with:
-          java-version: adopt@1.8
+          fetch-depth: 100
+          fetch-tags: true
+      - name: Install nix
+        uses: cachix/install-nix-action@v27
       - name: Coursier cache
         uses: coursier/cache-action@v6
       - name: sbt ci-release ${{ github.ref }}
-        run: sbt ci-release
+        run: nix develop .#ci11 --command sbt ci-release
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
