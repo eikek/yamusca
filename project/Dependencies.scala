@@ -11,8 +11,6 @@ object Dependencies {
     val munitCatsEffectVersion = "2.0.0"
     val circeVersion = "0.14.12"
     val scalateVersion = "1.9.7"
-    val organizeImports = "0.6.0"
-
   }
 
   val munit = Seq(
@@ -41,10 +39,6 @@ object Dependencies {
     "io.circe" %% "circe-parser" % Version.circeVersion
   )
   val circeAll = circeCore ++ circeGeneric ++ circeParser
-
-  val organizeImports = Seq(
-    "com.github.liancheng" %% "organize-imports" % Version.organizeImports
-  )
 
   def scalaReflect(scalaVersion: String): Seq[ModuleID] =
     Seq("org.scala-lang" % "scala-reflect" % scalaVersion % "provided")
