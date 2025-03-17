@@ -99,8 +99,7 @@ lazy val noPublish = Seq(
 
 val scalafixSettings = Seq(
   semanticdbEnabled := true, // enable SemanticDB
-  semanticdbVersion := scalafixSemanticdb.revision, // use Scalafix compatible version
-  ThisBuild / scalafixDependencies ++= Dependencies.organizeImports
+  semanticdbVersion := scalafixSemanticdb.revision // use Scalafix compatible version
 )
 
 lazy val core = crossProject(JSPlatform, JVMPlatform)

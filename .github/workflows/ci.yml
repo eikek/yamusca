@@ -3,26 +3,24 @@ on:
   pull_request:
 jobs:
   ci-matrix:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        java: [ 'adopt@1.8', 'adopt@1.11', 'openjdk@1.11', 'zulu@1.16' ]
+        ci: [ "ci11", "ci17", "ci21" ]
     steps:
       - uses: actions/checkout@v2.3.4
         with:
           fetch-depth: 100
-      - name: Fetch tags
-        run: git fetch --depth=100 origin +refs/tags/*:refs/tags/*
-      - uses: olafurpg/setup-scala@v10
-        with:
-          java-version: ${{ matrix.java }}
+          fetch-tags: true
+      - name: Install nix
+        uses: cachix/install-nix-action@v27
       - name: Coursier cache
         uses: coursier/cache-action@v6
-      - name: sbt ci ${{ github.ref }}
-        run: sbt ci
+      - name: sbt ${{ matrix.ci }} (${{ github.ref }})
+        run: nix develop .#${{ matrix.ci }} --command sbt ci
   ci:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: [ci-matrix]
     steps:
       - name: Aggregate of lint, and all tests
