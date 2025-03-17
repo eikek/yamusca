@@ -13,12 +13,11 @@
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
-      ciPkgs = with pkgs; [
-        devshell-tools.packages.${system}.sbt17
-        jdk17
+      ciPkgs = java-version: with pkgs; [
+        devshell-tools.packages.${system}."sbt${java-version}"
       ];
       devshellPkgs =
-        ciPkgs
+        (ciPkgs "17")
         ++ (with pkgs; [
           jq
           scala-cli
@@ -32,8 +31,16 @@
         default = pkgs.mkShellNoCC {
           buildInputs = devshellPkgs;
         };
-        ci = pkgs.mkShellNoCC {
-          buildInputs = ciPkgs;
+        ci11 = pkgs.mkShellNoCC {
+          buildInputs = ciPkgs "11";
+          SBT_OPTS = "-Xmx2G -Xss4m";
+        };
+        ci17 = pkgs.mkShellNoCC {
+          buildInputs = ciPkgs "17";
+          SBT_OPTS = "-Xmx2G -Xss4m";
+        };
+        ci21 = pkgs.mkShellNoCC {
+          buildInputs = ciPkgs "21";
           SBT_OPTS = "-Xmx2G -Xss4m";
         };
       };

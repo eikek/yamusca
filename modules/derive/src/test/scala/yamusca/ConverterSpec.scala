@@ -33,7 +33,7 @@ class ConverterSpec extends FunSuite {
       file: File = new File("test.txt"),
       path: Path = new File("path.txt").toPath,
       uri: URI = URI.create("jdbc:postgres://localhost"),
-      url: URL = new URL("http://github.com"),
+      url: URL = URI.create("http://github.com").toURL,
       uuid: UUID = UUID.fromString("2384fe1c-b962-470f-817e-9b167d93c0b7"),
       duration: Duration = Duration.ofSeconds(20),
       instant: Instant = Instant.parse("2017-06-29T12:30:00Z"),
