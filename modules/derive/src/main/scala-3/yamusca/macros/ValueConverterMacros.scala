@@ -10,7 +10,10 @@ import yamusca.context.*
 // - https://blog.philipp-martini.de/blog/magic-mirror-scala3/
 // - https://docs.scala-lang.org/scala3/reference/contextual/derivation.html
 object ValueConverterMacros:
-  private def newConverter[A](elems: List[ValueConverter[?]], names: Seq[String]): ValueConverter[A] =
+  private def newConverter[A](
+      elems: List[ValueConverter[?]],
+      names: Seq[String]
+  ): ValueConverter[A] =
     new ValueConverter[A]:
       def apply(a: A): Value =
         val t = a.asInstanceOf[Product].productIterator.toList
