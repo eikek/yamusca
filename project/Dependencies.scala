@@ -5,11 +5,11 @@ object Dependencies {
   object Version {
     val scala213 = "2.13.16"
     val scala212 = "2.12.20"
-    val scala3 = "3.3.5"
+    val scala3 = "3.3.6"
 
     val munitVersion = "1.1.1"
     val munitCatsEffectVersion = "2.1.0"
-    val circeVersion = "0.14.12"
+    val circeVersion = "0.14.13"
     val scalateVersion = "1.9.7"
   }
 
