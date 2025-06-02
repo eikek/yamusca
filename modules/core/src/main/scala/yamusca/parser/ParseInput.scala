@@ -67,7 +67,7 @@ final case class ParseInput(
   def splitAtNext(s: String): Option[(ParseInput, ParseInput)] =
     raw.indexOf(s, pos) match {
       case -1 => None
-      case n =>
+      case n  =>
         if (n >= end) None
         else Some(takeLeft(n - pos) -> dropLeft(n - pos))
     }
