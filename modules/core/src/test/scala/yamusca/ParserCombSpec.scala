@@ -27,7 +27,7 @@ class ParserCombSpec extends FunSuite {
   test("parseTag should parse a starting tag") {
     def check(tag: String, expectDelim: Delim, expectName: String): Unit =
       parseTag(ParseInput(tag)) match {
-        case Left((_, err)) => fail(err)
+        case Left((_, err))     => fail(err)
         case Right((_, (d, n))) =>
           assertEquals(d, expectDelim)
           assertEquals(n, expectName)
@@ -66,7 +66,7 @@ class ParserCombSpec extends FunSuite {
   test("parseStartSection should parse starting section tags") {
     def check(in: String, invExpect: Boolean, nameExpect: String): Unit =
       parseStartSection(ParseInput(in)) match {
-        case Left((_, err)) => fail(err)
+        case Left((_, err))          => fail(err)
         case Right((_, (inv, name))) =>
           assertEquals(inv, invExpect)
           assertEquals(name, nameExpect)
@@ -80,7 +80,7 @@ class ParserCombSpec extends FunSuite {
   test("parseEndSection should parse ending section tags") {
     def check(in: String, nameExpect: String): Unit =
       parseEndSection(ParseInput(in)) match {
-        case Left((_, err)) => fail(err)
+        case Left((_, err))   => fail(err)
         case Right((_, name)) =>
           assertEquals(name, nameExpect)
       }
@@ -92,7 +92,7 @@ class ParserCombSpec extends FunSuite {
   test("consumeUntilEndSection should consume input until end section") {
     def check(in: String, name: String, expect: String, rest: String): Unit =
       consumeUntilEndSection(name)(ParseInput(in)) match {
-        case Left((_, err)) => fail(err)
+        case Left((_, err))      => fail(err)
         case Right((next, pout)) =>
           assertEquals(pout.current, expect)
           assertEquals(next.current, rest)
@@ -111,7 +111,7 @@ class ParserCombSpec extends FunSuite {
   test("parseLiteral should parse literals") {
     def check(in: String, expect: String, rest: String): Unit =
       parseLiteral(ParseInput(in)) match {
-        case Left((_, err)) => fail(err)
+        case Left((_, err))   => fail(err)
         case Right((next, l)) =>
           assertEquals(l.text, expect)
           assertEquals(next.current, rest)
