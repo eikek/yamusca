@@ -81,14 +81,14 @@ class ParseInputSpec extends FunSuite {
     val in = ParseInput("abc||def||hij")
 
     in.splitAtNext("||") match {
-      case None => fail("|| not found")
+      case None                => fail("|| not found")
       case Some((left, right)) =>
         assertEquals(left.current, "abc")
         assertEquals(right.current, "||def||hij")
     }
 
     in.dropLeft(5).splitAtNext("||") match {
-      case None => fail("|| not found")
+      case None                => fail("|| not found")
       case Some((left, right)) =>
         assertEquals(left.current, "def")
         assertEquals(right.current, "||hij")
